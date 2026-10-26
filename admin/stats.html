@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>إحصائيات عامة · لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/dada.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main id="content" class="grid gap-8 min-w-0">
+  <h1 class="page-title"><span class="chip c-news tilt" style="--r:-2">إحصائيات</span><span class="chip c-redbg tilt" style="--r:3">عامة</span></h1>
+  <section id="kpis" class="grid grid-cols-2 xl:grid-cols-4 gap-5" aria-label="أرقام عامة"></section>
+
+  <section class="card p-5 sm:p-6" aria-labelledby="c1"><h2 id="c1" class="h-sec">التسجيلات الجديدة، آخر ٣٠ يوم</h2><p class="text-sm muted mb-4">مرّر على العمود عشان تشوف العدد. الأحمر هو اليوم.</p><div id="signups"></div></section>
+  <section class="card p-5 sm:p-6" aria-labelledby="c2"><h2 id="c2" class="h-sec">المستخدمين النشطين يوميًا</h2><p class="text-sm muted mb-4">عدد اللي أنجزوا عادة وحدة على الأقل في اليوم.</p><div id="active"></div></section>
+  <section class="card p-5 sm:p-6" aria-labelledby="c3"><h2 id="c3" class="h-sec">الإنجازات اليومية</h2><p class="text-sm muted mb-4">عدد العادات اللي انعلّم عليها في كل يوم.</p><div id="done"></div></section>
+
+  <div class="grid xl:grid-cols-2 gap-8">
+    <section class="card p-5 sm:p-6 grid gap-3 content-start" aria-labelledby="c4"><h2 id="c4" class="h-sec">أشهر العادات</h2><p class="text-sm muted">كم مستخدم عنده نفس العادة.</p><div id="top" class="grid gap-3"></div></section>
+    <section class="card p-5 sm:p-6 grid gap-3 content-start" aria-labelledby="c5"><h2 id="c5" class="h-sec">أنواع العادات</h2><p class="text-sm muted">حسب الأيقونة اللي اختارها المستخدم.</p><div id="icons" class="grid gap-3"></div></section>
+    <section class="card p-5 sm:p-6 grid gap-3 content-start" aria-labelledby="c6"><h2 id="c6" class="h-sec">طول سلسلة الأيام</h2><p class="text-sm muted">كم مستخدم في كل فئة.</p><div id="streaks" class="grid gap-3"></div></section>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../assets/config.js"></script>
+<script src="admin.js"></script>
+<script>
+Admin.start('stats', async () => {
+  const { sb, num, must, dayLabel, vbars, hbars, ICON_NAME } = Admin;
+  const [o, s] = await Promise.all([sb.rpc('admin_overview'), sb.rpc('admin_stats')]);
+  const ov = must(o, 'ما قدرنا نحمّل الأرقام'), st = must(s, 'ما قدرنا نحمّل الإحصائيات');
+  if (!ov || !st) return;
+
+  const tile = (label, v, note) => `<div class="card p-5"><p class="font-bold muted text-sm">${label}</p><p class="kpi num">${v}</p><p class="text-sm muted">${note}</p></div>`;
+  document.getElementById('kpis').innerHTML =
+    tile('كل المستخدمين', num(ov.users), `${num(ov.users_week)} جديد آخر ٧ أيام`) +
+    tile('متوسط العادات لكل مستخدم', num(st.avg_habits), `${num(ov.habits)} عادة بالمجموع`) +
+    tile('المجموعات', num(st.groups.count), `متوسط ${num(st.groups.avg_members)} عضو · أكبرها ${num(st.groups.largest)}`) +
+    tile('مخفيين من المتصدرين', num(st.hidden), 'اختاروا «أخفني» من الإعدادات');
+
+  const days = st.days || [];
+  const series = key => days.map(d => ({ label: dayLabel(d.day), value: d[key] }));
+  document.getElementById('signups').innerHTML = vbars(series('signups'), 'تسجيل جديد');
+  document.getElementById('active').innerHTML = vbars(series('active'), 'مستخدم نشط');
+  document.getElementById('done').innerHTML = vbars(series('done'), 'إنجاز');
+
+  document.getElementById('top').innerHTML = hbars((st.top_habits || []).map(h => ({ label: h.name, value: h.users })));
+  document.getElementById('icons').innerHTML = hbars((st.icons || []).map(i => ({ label: ICON_NAME[i.icon] || i.icon, value: i.n })));
+  const k = st.streaks || {};
+  document.getElementById('streaks').innerHTML = hbars([
+    { label: 'بدون سلسلة', value: k.zero }, { label: '١–٢ يوم', value: k.short }, { label: '٣–٦ أيام', value: k.week },
+    { label: '٧–١٣ يوم', value: k.two_weeks }, { label: '١٤ يوم وأكثر', value: k.long },
+  ].map(r => ({ ...r, value: r.value || 0 })));
+});
+</script>
+</body>
+</html>

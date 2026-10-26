@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.app">لوحتي · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+</head>
+<body>
+<main id="main" class="wrap py-8 grid gap-10">
+  <section aria-labelledby="hello">
+    <p id="today-date" class="muted font-bold"></p>
+    <h1 id="hello" class="page-title"></h1>
+  </section>
+
+  <section id="summary" class="grid sm:grid-cols-3 gap-6" data-i18n-attr="aria-label:app.summary"></section>
+
+  <section aria-labelledby="today-title">
+    <div class="flex items-end justify-between gap-4 flex-wrap mb-4">
+      <h2 id="today-title" class="h-sec" data-i18n="app.todayHabits">عادات اليوم</h2>
+      <a href="habits.html" class="font-bold underline underline-offset-4" data-i18n="app.editHabits">عدّل عاداتك</a>
+    </div>
+    <div id="bonus" class="mb-4"></div>
+    <ul id="habit-list" class="grid gap-4"></ul>
+  </section>
+
+  <section aria-labelledby="board-title" id="board-wrap"></section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(async () => {
+  const S = KhutwaStore, I = KhutwaI18n, { t, esc, num, icon, toast, ransomize } = KhutwaUI;
+  const me = await KhutwaUI.shell('app');
+  if (!me) return;
+
+  document.getElementById('today-date').textContent = I.date(new Date(), { weekday: 'long', day: 'numeric', month: 'long' });
+  const hello = document.getElementById('hello');
+  hello.innerHTML = `<span class="sr-only">${esc(t('app.hello', { name: me.name }))}</span>
+    <span aria-hidden="true"><span class="chip c-news tilt" style="--r:-2">${t('app.hello1')}</span><span class="chip c-ink tilt" style="--r:3">${t('app.hello2')}</span></span>
+    <span data-ransom="${esc(me.name)}"></span>`;
+  ransomize(hello);
+
+  async function renderSummary() {
+    const s = await S.summary();
+    document.getElementById('summary').innerHTML = `
+      <div class="card p-5">
+        <p class="font-bold muted">${t('app.points')}</p>
+        <p class="num" style="font-family:var(--f3);font-size:48px;line-height:1.2">${num(s.points)}</p>
+        <p class="font-bold">${t('app.level', { n: num(s.level) })}</p>
+        <div class="bar mt-2" role="progressbar" aria-label="${t('app.levelProgress')}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(s.levelProgress * 100)}"><i style="width:${s.levelProgress * 100}%"></i></div>
+        <p class="text-sm muted mt-1">${t('app.toNext', { pts: I.plural('pts', s.toNext), n: num(s.level + 1) })}</p>
+      </div>
+      <div class="card p-5 flex items-center gap-5">
+        <div class="stamp tilt shrink-0" style="--r:-10;width:104px;height:104px">
+          <div><div class="flex items-center justify-center gap-1" style="font-family:var(--f3);font-size:34px">${icon('flame', 22)}${num(s.streak)}</div><div style="font-size:15px">${t('app.streakUnit')}</div></div>
+        </div>
+        <p class="text-sm muted">${t('app.streakNote')}</p>
+      </div>
+      <div class="card p-5">
+        <p class="font-bold muted">${t('app.today')}</p>
+        <p class="num" style="font-family:var(--f3);font-size:48px;line-height:1.2">${num(s.today.done)} <span style="font-size:24px">${t('app.of', { n: num(s.today.total) })}</span></p>
+        <p class="text-sm muted">${t('app.rules', { a: num(S.RULES.pointsPerHabit), b: num(S.RULES.allDoneBonus) })}</p>
+        <p class="font-bold mt-1">${t('app.weekPoints')} <span class="num">${num(s.weekPoints)}</span></p>
+      </div>`;
+    document.getElementById('bonus').innerHTML = s.today.complete
+      ? `<p class="card p-4 font-bold flex items-center gap-3" style="background:var(--yellow)">${icon('star', 24)} ${t('app.allDone', { n: num(S.RULES.allDoneBonus) })}</p>` : '';
+    return s;
+  }
+
+  async function renderHabits() {
+    const [habits, map] = await Promise.all([S.habits(), S.dayMap()]);
+    const list = document.getElementById('habit-list');
+    if (!habits.length) {
+      list.innerHTML = `<li class="card p-6 text-center"><p class="font-bold text-lg">${t('app.noHabits')}</p><p class="muted">${t('app.noHabitsHint')}</p><a href="habits.html" class="btn mt-4">${icon('plus', 18)} ${t('app.addFirst')}</a></li>`;
+      return;
+    }
+    list.innerHTML = habits.map(h => {
+      const c = map[h.id] || 0, done = c >= h.target, name = esc(h.name);
+      const control = h.target === 1
+        ? `<button type="button" class="check-btn" data-toggle="${h.id}" aria-pressed="${done}" aria-label="${t(done ? 'app.undo' : 'app.complete', { name })}">${done ? icon('check', 30) : ''}</button>`
+        : `<div class="flex items-center gap-2 shrink-0">
+             <button type="button" class="icon-btn" data-step="-1" data-id="${h.id}" aria-label="${t('app.minus', { name })}" ${c === 0 ? 'disabled' : ''}>${icon('minus', 20)}</button>
+             <span class="num font-bold text-lg w-8 text-center" aria-hidden="true">${num(c)}</span>
+             <button type="button" class="icon-btn" data-step="1" data-id="${h.id}" aria-label="${t('app.plus', { name })}" ${done ? 'disabled' : ''}>${icon('plus', 20)}</button>
+           </div>`;
+      return `<li class="card p-4 flex items-center gap-4" style="${done ? 'background:var(--news)' : ''}">
+        <span class="w-12 h-12 grid place-items-center shrink-0" style="border:2px solid var(--ink);background:var(--field)">${icon(h.icon, 26)}</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-bold text-lg leading-snug ${done ? 'done' : ''}"><bdi>${name}</bdi></p>
+          <p class="text-sm muted">${h.target > 1 ? t('app.count', { c: num(c), n: num(h.target) }) : t(done ? 'app.doneOne' : 'app.leftOne')} · ${t('app.plusPts', { n: num(S.RULES.pointsPerHabit) })}</p>
+          ${h.target > 1 ? `<div class="bar mt-1" aria-hidden="true"><i style="width:${(c / h.target) * 100}%"></i></div>` : ''}
+        </div>
+        ${control}
+      </li>`;
+    }).join('');
+  }
+
+  async function change(id, delta, isToggle) {
+    const [habits, map, before] = await Promise.all([S.habits(), S.dayMap(), S.summary()]);
+    const h = habits.find(x => x.id === id), c = map[id] || 0;
+    await S.setCount(id, isToggle ? (c >= h.target ? 0 : h.target) : c + delta);
+    await renderHabits(); const after = await renderSummary();
+    const keep = isToggle ? document.querySelector(`[data-toggle="${id}"]`)
+      : document.querySelector(`[data-id="${id}"][data-step="${delta}"]:not([disabled])`) || document.querySelector(`[data-id="${id}"]:not([disabled])`);
+    keep?.focus();
+    if (after.today.complete && !before.today.complete) toast(t('app.toastAll', { n: num(S.RULES.allDoneBonus) }));
+    else if (after.today.done > before.today.done) toast(t('app.toastOne', { n: num(S.RULES.pointsPerHabit) }));
+  }
+  document.getElementById('habit-list').addEventListener('click', e => {
+    const tg = e.target.closest('[data-toggle]'); if (tg) return change(tg.dataset.toggle, 0, true);
+    const st = e.target.closest('[data-step]'); if (st) return change(st.dataset.id, Number(st.dataset.step), false);
+  });
+
+  async function renderBoard() {
+    const g = await S.group(), wrap = document.getElementById('board-wrap');
+    if (!g) {
+      wrap.innerHTML = `<div class="card p-6 flex flex-wrap items-center justify-between gap-4"><div><h2 id="board-title" class="h-sec">${t('app.compete')}</h2><p class="muted">${t('app.competeHint')}</p></div><a href="group.html" class="btn">${icon('users', 20)} ${t('nav.group')}</a></div>`;
+      return;
+    }
+    wrap.innerHTML = `
+      <div class="flex items-end justify-between gap-4 flex-wrap mb-4">
+        <h2 id="board-title" class="h-sec">${t('app.boardTitle', { group: `<bdi>${esc(g.name)}</bdi>` })}</h2>
+        <a href="group.html" class="font-bold underline underline-offset-4">${t('app.fullBoard')}</a>
+      </div>
+      <ol class="card">
+        ${g.board.slice(0, 3).map((m, i) => `<li class="flex items-center gap-4 p-4 ${i ? 'border-t-2 border-dashed' : ''}" style="border-color:rgba(20,18,16,.2);${m.me ? 'background:rgba(200,32,28,.08)' : ''}">
+          <span class="num" style="font-family:var(--f3);font-size:26px;width:1.5em;color:${i === 0 ? 'var(--red)' : 'var(--ink)'}">${num(i + 1)}</span>
+          <bdi class="flex-1 font-bold">${esc(m.me ? t('common.you') : m.name)}</bdi>
+          <span class="num font-bold">${I.plural('pts', m.week)}</span></li>`).join('')}
+      </ol>`;
+  }
+
+  await Promise.all([renderSummary(), renderHabits(), renderBoard()]);
+})();
+</script>
+</body>
+</html>

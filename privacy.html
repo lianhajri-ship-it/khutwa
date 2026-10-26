@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.privacy">سياسة الخصوصية · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+<style>
+  .policy h2 { font-family: var(--f3); font-size: 26px; margin-top: 32px; }
+  .policy ul { list-style: none; padding: 0; display: grid; gap: 8px; margin-top: 8px; }
+  .policy li { color: var(--ink2); }
+  .policy li::before { content: "✕"; color: var(--red); font-weight: 700; margin-inline-end: 10px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap flex items-center justify-between gap-4 py-3">
+    <a href="index.html" class="logo tilt" style="--r:-3" data-i18n="brand">خطوة</a>
+    <div class="flex items-center gap-3">
+      <span data-lang-slot></span>
+      <a href="index.html" class="font-bold underline underline-offset-4" data-i18n="privacy.back">رجوع للرئيسية</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap py-10">
+  <article class="policy max-w-[68ch]">
+    <h1 class="page-title"><span class="sr-only" data-i18n="footer.privacy"></span><span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-2" data-i18n="privacy.w1"></span><span class="chip c-news tilt" style="--r:3" data-i18n="privacy.w2"></span></span></h1>
+    <p class="muted text-sm mt-2" data-i18n="privacy.updated"></p>
+    <p class="mt-5 text-lg" data-i18n="privacy.intro"></p>
+
+    <h2 data-i18n="privacy.collectH"></h2>
+    <ul><li data-i18n="privacy.collect1"></li><li data-i18n="privacy.collect2"></li><li data-i18n="privacy.collect3"></li><li data-i18n="privacy.collect4"></li></ul>
+
+    <h2 data-i18n="privacy.notH"></h2>
+    <ul><li data-i18n="privacy.not1"></li><li data-i18n="privacy.not2"></li></ul>
+
+    <h2 data-i18n="privacy.useH"></h2>
+    <ul><li data-i18n="privacy.use1"></li><li data-i18n="privacy.use2"></li><li data-i18n="privacy.use3"></li></ul>
+
+    <h2 data-i18n="privacy.seeH"></h2>
+    <ul><li data-i18n="privacy.see1"></li><li data-i18n="privacy.see2"></li><li data-i18n="privacy.see3"></li></ul>
+
+    <h2 data-i18n="privacy.protectH"></h2>
+    <ul><li data-i18n="privacy.protect1"></li><li data-i18n="privacy.protect2"></li></ul>
+
+    <h2 data-i18n="privacy.rightsH"></h2>
+    <ul><li data-i18n="privacy.rights1"></li><li data-i18n="privacy.rights2"></li><li data-i18n="privacy.rights3"></li></ul>
+
+    <h2 data-i18n="privacy.contactH"></h2>
+    <p class="mt-2"><span data-i18n="privacy.contact"></span> <a href="contact.html" class="font-bold underline" data-i18n="footer.contact"></a></p>
+  </article>
+</main>
+
+<footer class="py-8 border-t-2" style="border-color:var(--ink)">
+  <p class="wrap text-sm muted" data-i18n="footer.rights"></p>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+  KhutwaUI.injectSprite();
+  document.querySelector('[data-lang-slot]').outerHTML = KhutwaUI.langButton();
+</script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>طلبات الاتصال · لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/dada.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main id="content" class="grid gap-6 min-w-0">
+  <h1 class="page-title"><span class="chip c-redbg tilt" style="--r:-2">طلبات</span><span class="chip c-news tilt" style="--r:3">الاتصال</span></h1>
+
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="flex flex-wrap gap-2" role="group" aria-label="الحالة">
+      <label class="choice"><input type="radio" name="s" value="new" checked>الجديدة <span id="c-new" class="num"></span></label>
+      <label class="choice"><input type="radio" name="s" value="read">مقروءة <span id="c-read" class="num"></span></label>
+      <label class="choice"><input type="radio" name="s" value="done">تم الرد <span id="c-done" class="num"></span></label>
+      <label class="choice"><input type="radio" name="s" value="all">الكل <span id="c-all" class="num"></span></label>
+    </div>
+    <div class="field w-full sm:w-56"><label for="topic">الموضوع</label>
+      <select id="topic"><option value="">كل المواضيع</option><option value="suggestion">اقتراح</option><option value="problem">مشكلة في الموقع</option><option value="account">حسابي</option><option value="other">شي ثاني</option></select>
+    </div>
+  </div>
+
+  <ul id="list" class="grid gap-4"></ul>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../assets/config.js"></script>
+<script src="admin.js"></script>
+<script>
+Admin.start('messages', async () => {
+  const { sb, esc, num, when, must, ok, toast, refreshBadge, TOPIC } = Admin;
+  const STATUS = { new: 'جديدة', read: 'مقروءة', done: 'تم الرد' };
+  let msgs = [];
+
+  async function load() {
+    const d = must(await sb.from('contact_messages').select('*').order('created_at', { ascending: false }), 'ما قدرنا نحمّل الطلبات');
+    if (d) { msgs = d; render(); refreshBadge(); }
+  }
+
+  function render() {
+    const s = document.querySelector('input[name="s"]:checked').value, topic = document.getElementById('topic').value;
+    const count = st => msgs.filter(m => st === 'all' || m.status === st).length;
+    ['new', 'read', 'done', 'all'].forEach(st => (document.getElementById('c-' + st).textContent = `(${num(count(st))})`));
+    const rows = msgs.filter(m => (s === 'all' || m.status === s) && (!topic || m.topic === topic));
+    document.getElementById('list').innerHTML = rows.map(m => {
+      const reply = `mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent('رد من خطوة: ' + (TOPIC[m.topic] || ''))}`;
+      return `<li class="card p-5 grid gap-3" data-id="${esc(m.id)}" style="${m.status === 'new' ? 'box-shadow:4px 4px 0 var(--red)' : ''}">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="chip c-ink" style="font-family:var(--fb);font-size:13px">${esc(TOPIC[m.topic] || m.topic)}</span>
+            <span class="text-sm font-bold">${esc(STATUS[m.status] || m.status)}</span>
+          </div>
+          <span class="text-sm muted">${when(m.created_at)}</span>
+        </div>
+        <p class="font-bold"><bdi>${esc(m.name)}</bdi> · <span dir="ltr" class="font-medium select-all">${esc(m.email)}</span>${m.user_id ? ' <span class="text-sm muted">(عنده حساب)</span>' : ''}</p>
+        <p class="msg-body" dir="auto">${esc(m.message)}</p>
+        <div class="flex flex-wrap items-center gap-2" data-actions>
+          <a class="btn btn-sm" href="${reply}">رد بالإيميل</a>
+          ${m.status !== 'read' ? '<button type="button" class="btn btn-ghost btn-sm" data-status="read">علّمها مقروءة</button>' : ''}
+          ${m.status !== 'done' ? '<button type="button" class="btn btn-ghost btn-sm" data-status="done">تم الرد</button>' : ''}
+          ${m.status !== 'new' ? '<button type="button" class="btn btn-ghost btn-sm" data-status="new">رجّعها جديدة</button>' : ''}
+          <button type="button" class="btn btn-ghost btn-sm" data-del style="color:var(--red)">حذف</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2" data-confirm hidden>
+          <span class="font-bold">تحذف الطلب نهائيًا؟</span>
+          <button type="button" class="btn btn-danger btn-sm" data-del-yes>إيه، احذف</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-del-no>لا</button>
+        </div>
+      </li>`;
+    }).join('') || '<li class="card p-6 muted">ما فيه طلبات هنا.</li>';
+  }
+
+  document.querySelectorAll('input[name="s"]').forEach(r => r.addEventListener('change', render));
+  document.getElementById('topic').addEventListener('change', render);
+  document.getElementById('list').addEventListener('click', async e => {
+    const li = e.target.closest('[data-id]'); if (!li) return;
+    const id = li.dataset.id, q = s => li.querySelector(s), st = e.target.closest('[data-status]');
+    if (st) {
+      if (!ok(await sb.from('contact_messages').update({ status: st.dataset.status }).eq('id', id), 'ما قدرنا نحدّث الطلب')) return;
+      msgs.find(m => m.id === id).status = st.dataset.status; render(); refreshBadge(); toast('تحدّثت الحالة'); return;
+    }
+    if (e.target.closest('[data-del]')) { q('[data-actions]').hidden = true; q('[data-confirm]').hidden = false; q('[data-del-no]').focus(); return; }
+    if (e.target.closest('[data-del-no]')) { q('[data-confirm]').hidden = true; q('[data-actions]').hidden = false; return; }
+    if (e.target.closest('[data-del-yes]')) {
+      if (!ok(await sb.from('contact_messages').delete().eq('id', id), 'ما قدرنا نحذف الطلب')) return;
+      msgs = msgs.filter(m => m.id !== id); render(); refreshBadge(); toast('انحذف الطلب');
+    }
+  });
+
+  await load();
+});
+</script>
+</body>
+</html>

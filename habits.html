@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.habits">عاداتي · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+</head>
+<body>
+<main id="main" class="wrap py-8 grid gap-10">
+  <h1 class="page-title"><span class="sr-only" data-i18n="nav.habits">عاداتي</span><span data-ransom-i18n="nav.habits"></span></h1>
+
+  <section aria-labelledby="add-title" class="grid lg:grid-cols-[1fr_1.1fr] gap-8 items-start">
+    <form id="add-form" class="card p-5 sm:p-6 grid gap-5" novalidate>
+      <h2 id="add-title" class="h-sec" data-i18n="habits.add">أضف عادة</h2>
+      <div class="field">
+        <label for="h-name" data-i18n="habits.name">اسم العادة</label>
+        <input id="h-name" name="name" type="text" dir="auto" maxlength="40" data-i18n-attr="placeholder:habits.namePh" aria-describedby="h-name-err">
+        <p id="h-name-err" class="err" aria-live="polite"></p>
+      </div>
+      <div class="field">
+        <label for="h-target" data-i18n="habits.target">كم مرة باليوم؟</label>
+        <input id="h-target" name="target" type="number" inputmode="numeric" min="1" max="20" value="1" aria-describedby="h-target-hint">
+        <p id="h-target-hint" class="text-sm muted mt-1" data-i18n="habits.targetHint"></p>
+      </div>
+      <fieldset class="field">
+        <legend class="font-bold mb-2" data-i18n="habits.icon">أيقونة</legend>
+        <div id="icon-choices" class="flex flex-wrap gap-2"></div>
+      </fieldset>
+      <button type="submit" class="btn" data-i18n="habits.addBtn">إضافة العادة</button>
+    </form>
+
+    <div>
+      <h2 class="h-sec mb-3" data-i18n="habits.ideas">أفكار سريعة</h2>
+      <p class="muted mb-4" data-i18n="habits.ideasHint"></p>
+      <div id="ideas" class="flex flex-wrap gap-3"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="list-title">
+    <h2 id="list-title" class="h-sec mb-4" data-i18n="habits.current">عاداتك الحالية</h2>
+    <ul id="list" class="grid gap-4"></ul>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(async () => {
+  const S = KhutwaStore, I = KhutwaI18n, { t, esc, icon, toast, ransomize, HABIT_ICONS } = KhutwaUI;
+  if (!(await KhutwaUI.shell('habits'))) return;
+  ransomize();
+
+  // Quick ideas come from the database; the built-in list is the fallback.
+  let IDEAS = [['idea.water', 8, 'water'], ['idea.walk', 1, 'run'], ['idea.read', 1, 'book'], ['idea.sleep', 1, 'moon'], ['idea.meditate', 1, 'leaf'], ['idea.nophone', 1, 'phone']]
+    .map(([k, target, ic]) => ({ name: t(k), target, icon: ic }));
+  try { const remote = await S.habitIdeas(); if (remote.length) IDEAS = remote; } catch {}
+  const iconChoices = (name, checked) => HABIT_ICONS.map(k =>
+    `<label class="choice"><input type="radio" name="${name}" value="${k}" ${k === checked ? 'checked' : ''}>${icon(k, 20)}<span>${t('icon.' + k)}</span></label>`).join('');
+  document.getElementById('icon-choices').innerHTML = iconChoices('icon', 'star');
+
+  let shownIdeas = [];
+  async function render() {
+    const habits = await S.habits(), names = new Set(habits.map(h => h.name));
+    shownIdeas = IDEAS.filter(i => !names.has(i.name));
+    document.getElementById('ideas').innerHTML = shownIdeas.map((i, n) =>
+      `<button type="button" class="choice" data-idea="${n}">${icon(i.icon, 20)} ${esc(i.name)} ${icon('plus', 16)}</button>`).join('') || `<p class="muted">${t('habits.ideasDone')}</p>`;
+    document.getElementById('list').innerHTML = habits.length ? habits.map(h => {
+      const name = esc(h.name);
+      return `
+      <li class="card p-4" data-row="${h.id}">
+        <div class="flex items-center gap-4 flex-wrap" data-view>
+          <span class="w-12 h-12 grid place-items-center shrink-0" style="border:2px solid var(--ink);background:var(--field)">${icon(h.icon, 26)}</span>
+          <div class="flex-1 min-w-0"><p class="font-bold text-lg"><bdi>${name}</bdi></p><p class="text-sm muted">${I.plural('perDay', h.target)}</p></div>
+          <div class="flex gap-2" data-actions>
+            <button type="button" class="icon-btn" data-edit="${h.id}" aria-label="${t('habits.editAria', { name })}">${icon('edit', 20)}</button>
+            <button type="button" class="icon-btn" data-del="${h.id}" aria-label="${t('habits.delAria', { name })}" style="color:var(--red)">${icon('trash', 20)}</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" data-confirm hidden>
+            <span class="font-bold">${t('habits.delConfirm')}</span>
+            <button type="button" class="btn btn-danger btn-sm" data-del-yes="${h.id}">${t('habits.delYes')}</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-del-no>${t('common.no')}</button>
+          </div>
+        </div>
+        <form class="grid gap-4 mt-2" data-edit-form="${h.id}" hidden novalidate>
+          <div class="grid sm:grid-cols-[1fr_160px] gap-4">
+            <div class="field"><label for="e-name-${h.id}">${t('habits.name')}</label><input id="e-name-${h.id}" name="name" dir="auto" maxlength="40" value="${name}"></div>
+            <div class="field"><label for="e-target-${h.id}">${t('habits.targetShort')}</label><input id="e-target-${h.id}" name="target" type="number" min="1" max="20" value="${h.target}"></div>
+          </div>
+          <fieldset class="field"><legend class="font-bold mb-2">${t('habits.icon')}</legend><div class="flex flex-wrap gap-2">${iconChoices('icon-' + h.id, h.icon)}</div></fieldset>
+          <div class="flex gap-3"><button type="submit" class="btn btn-sm">${t('common.save')}</button><button type="button" class="btn btn-ghost btn-sm" data-cancel>${t('common.cancel')}</button></div>
+        </form>
+      </li>`; }).join('')
+      : `<li class="card p-6 text-center muted">${t('habits.empty')}</li>`;
+  }
+
+  const form = document.getElementById('add-form');
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const name = form.elements.name, err = document.getElementById('h-name-err');
+    err.textContent = ''; name.removeAttribute('aria-invalid');
+    if (!name.value.trim()) { name.setAttribute('aria-invalid', 'true'); err.textContent = t('habits.errName'); return name.focus(); }
+    await S.addHabit({ name: name.value, target: form.elements.target.value, icon: form.elements.icon.value });
+    toast(t('habits.added')); form.reset(); await render(); name.focus();
+  });
+
+  document.getElementById('ideas').addEventListener('click', async e => {
+    const b = e.target.closest('[data-idea]'); if (!b) return;
+    await S.addHabit(shownIdeas[Number(b.dataset.idea)]); toast(t('habits.added')); await render();
+  });
+
+  const list = document.getElementById('list');
+  list.addEventListener('click', async e => {
+    const row = e.target.closest('[data-row]'); if (!row) return;
+    const q = s => row.querySelector(s);
+    if (e.target.closest('[data-edit]')) { q('[data-view]').hidden = true; q('[data-edit-form]').hidden = false; q('input[name="name"]').focus(); }
+    else if (e.target.closest('[data-cancel]')) { q('[data-edit-form]').hidden = true; q('[data-view]').hidden = false; q('[data-edit]').focus(); }
+    else if (e.target.closest('[data-del]')) { q('[data-actions]').hidden = true; q('[data-confirm]').hidden = false; q('[data-del-no]').focus(); }
+    else if (e.target.closest('[data-del-no]')) { q('[data-confirm]').hidden = true; q('[data-actions]').hidden = false; q('[data-del]').focus(); }
+    else if (e.target.closest('[data-del-yes]')) { await S.deleteHabit(row.dataset.row); toast(t('habits.deleted')); await render(); }
+  });
+  list.addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target, id = f.dataset.editForm;
+    if (!f.elements.name.value.trim()) return f.elements.name.focus();
+    await S.updateHabit(id, { name: f.elements.name.value, target: f.elements.target.value, icon: f.elements['icon-' + id].value });
+    toast(t('habits.saved')); await render();
+  });
+
+  await render();
+})();
+</script>
+</body>
+</html>

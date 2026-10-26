@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.settings">الإعدادات · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+</head>
+<body>
+<main id="main" class="wrap py-8 grid gap-8 max-w-3xl">
+  <h1 class="page-title"><span class="sr-only" data-i18n="nav.settings"></span><span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-2" data-i18n="nav.settings"></span></span></h1>
+
+  <form id="profile" class="card p-5 sm:p-6 grid gap-4" novalidate aria-labelledby="p-title">
+    <h2 id="p-title" class="h-sec" data-i18n="set.account"></h2>
+    <div class="field">
+      <label for="p-name" data-i18n="auth.name"></label>
+      <input id="p-name" name="name" dir="auto" maxlength="30" aria-describedby="p-name-err">
+      <p id="p-name-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="p-email" data-i18n="auth.email"></label>
+      <input id="p-email" name="email" type="email" dir="ltr" readonly aria-describedby="p-email-hint">
+      <p id="p-email-hint" class="text-sm muted mt-1" data-i18n="set.emailHint"></p>
+    </div>
+    <button type="submit" class="btn justify-self-start" data-i18n="common.save"></button>
+  </form>
+
+  <section class="card p-5 sm:p-6 grid gap-4" aria-labelledby="lang-title">
+    <h2 id="lang-title" class="h-sec" data-i18n="set.lang"></h2>
+    <div class="flex flex-wrap gap-2" role="radiogroup" data-i18n-attr="aria-label:set.lang">
+      <label class="choice"><input type="radio" name="lang" value="ar">العربية</label>
+      <label class="choice"><input type="radio" name="lang" value="en">English</label>
+    </div>
+  </section>
+
+  <section class="card p-5 sm:p-6 grid gap-4" aria-labelledby="pr-title">
+    <h2 id="pr-title" class="h-sec" data-i18n="set.privacy"></h2>
+    <label class="flex items-start justify-between gap-4" for="hide">
+      <span><span class="font-bold block" data-i18n="set.hide"></span><span class="text-sm muted" data-i18n="set.hideHint"></span></span>
+      <input id="hide" type="checkbox" class="switch mt-1">
+    </label>
+    <p class="text-sm muted"><span data-i18n="set.privateNote"></span> <a href="privacy.html" class="underline font-bold" data-i18n="footer.privacy"></a></p>
+  </section>
+
+  <section class="card p-5 sm:p-6 grid gap-3" aria-labelledby="r-title" style="background:var(--news)">
+    <h2 id="r-title" class="h-sec" data-i18n="set.reminders"></h2>
+    <p class="muted" data-i18n="set.remindersSoon"></p>
+  </section>
+
+  <section class="card p-5 sm:p-6 grid gap-4" aria-labelledby="d-title">
+    <h2 id="d-title" class="h-sec" data-i18n="set.data"></h2>
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <p class="muted max-w-[44ch]" data-i18n="set.exportHint"></p>
+      <button type="button" id="export" class="btn btn-ghost" data-i18n="set.export"></button>
+    </div>
+    <hr class="border-dashed" style="border-color:rgba(0,0,0,.3)">
+    <form id="delete" class="grid gap-3" novalidate>
+      <p class="font-bold" style="color:var(--red)" data-i18n="set.delete"></p>
+      <p class="muted" data-i18n="set.deleteHint"></p>
+      <div class="field"><label for="d-confirm" data-i18n="set.deleteLabel"></label><input id="d-confirm" name="confirm" dir="auto" autocomplete="off" aria-describedby="d-confirm-err"><p id="d-confirm-err" class="err" aria-live="polite"></p></div>
+      <button type="submit" class="btn btn-danger justify-self-start" data-i18n="set.deleteBtn"></button>
+    </form>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(async () => {
+  const S = KhutwaStore, I = KhutwaI18n, { t, toast } = KhutwaUI;
+  if (!(await KhutwaUI.shell('settings'))) return;
+  const p = await S.profile();
+
+  const form = document.getElementById('profile');
+  form.elements.name.value = p.name; form.elements.email.value = p.email;
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); const i = form.elements.name, err = document.getElementById('p-name-err');
+    err.textContent = ''; i.removeAttribute('aria-invalid');
+    if (!i.value.trim()) { i.setAttribute('aria-invalid', 'true'); err.textContent = t('err.name'); return i.focus(); }
+    await S.updateProfile({ name: i.value });
+    document.querySelectorAll('[data-me-name]').forEach(el => (el.textContent = i.value.trim()));
+    toast(t('set.nameSaved'));
+  });
+
+  document.querySelectorAll('input[name="lang"]').forEach(r => {
+    r.checked = r.value === I.lang;
+    r.addEventListener('change', () => I.setLang(r.value));
+  });
+
+  const hide = document.getElementById('hide');
+  hide.checked = p.hideFromBoard;
+  hide.addEventListener('change', async () => { await S.updateProfile({ hideFromBoard: hide.checked }); toast(t(hide.checked ? 'set.hidden' : 'set.shown')); });
+
+  document.getElementById('export').addEventListener('click', async () => {
+    const blob = new Blob([JSON.stringify(await S.exportData(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `khutwa-${S.dayKey(new Date())}.json`;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast(t('set.exported'));
+  });
+
+  const del = document.getElementById('delete');
+  del.addEventListener('submit', async e => {
+    e.preventDefault(); const i = del.elements.confirm, err = document.getElementById('d-confirm-err');
+    if (i.value.trim().toLowerCase() !== t('set.deleteWord').toLowerCase()) { i.setAttribute('aria-invalid', 'true'); err.textContent = t('set.deleteErr'); return i.focus(); }
+    await S.deleteAccount(); location.href = 'index.html';
+  });
+})();
+</script>
+</body>
+</html>

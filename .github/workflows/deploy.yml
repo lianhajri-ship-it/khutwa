@@ -1,0 +1,55 @@
+# Publishes the site to GitHub Pages.
+# assets/config.js is not in the repository: it is written here from two repository secrets
+# (Settings → Secrets and variables → Actions):
+#   SUPABASE_URL              https://<project-ref>.supabase.co
+#   SUPABASE_PUBLISHABLE_KEY  sb_publishable_...   (the publishable key only, never a secret key)
+# Published: the site pages, assets/ and the admin/ dashboard (its data is protected in the database,
+# so visitors only ever see its sign-in form). supabase/ and docs/ stay out of the site.
+name: Deploy site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the public site
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_KEY" ]; then
+            echo "::error::Add the SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY repository secrets."; exit 1
+          fi
+          case "$SUPABASE_KEY" in sb_publishable_*) ;; *) echo "::error::SUPABASE_PUBLISHABLE_KEY must be a publishable key (sb_publishable_...)."; exit 1;; esac
+          mkdir -p _site
+          cp ./*.html _site/
+          cp -r assets _site/assets
+          cp -r admin _site/admin
+          rm -f _site/assets/config.example.js
+          printf "window.KHUTWA_CONFIG = { supabaseUrl: '%s', supabaseKey: '%s' };\n" "$SUPABASE_URL" "$SUPABASE_KEY" > _site/assets/config.js
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

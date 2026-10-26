@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.group">المجموعة · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+</head>
+<body>
+<main id="main" class="wrap py-8 grid gap-10">
+  <h1 class="page-title"><span class="sr-only" data-i18n="group.sr">المجموعة</span><span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-3" data-i18n="group.w1">شلّتك</span></span> <span data-ransom-i18n="group.ransom"></span></h1>
+  <div id="content" class="grid gap-10"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(async () => {
+  const S = KhutwaStore, I = KhutwaI18n, { t, esc, num, icon, toast, ransomize } = KhutwaUI;
+  if (!(await KhutwaUI.shell('group'))) return;
+  ransomize();
+  const root = document.getElementById('content');
+
+  function noGroup() {
+    root.innerHTML = `
+      <p class="text-lg muted max-w-[60ch]">${t('group.intro')}</p>
+      <div class="grid md:grid-cols-2 gap-8">
+        <form id="create" class="card p-6 grid gap-4" novalidate>
+          <h2 class="h-sec">${t('group.create')}</h2>
+          <div class="field"><label for="g-name">${t('group.name')}</label><input id="g-name" name="name" dir="auto" maxlength="30" placeholder="${t('group.namePh')}" aria-describedby="g-name-err"><p id="g-name-err" class="err" aria-live="polite"></p></div>
+          <button type="submit" class="btn">${icon('plus', 18)} ${t('group.createBtn')}</button>
+        </form>
+        <form id="join" class="card p-6 grid gap-4" novalidate style="background:var(--news)">
+          <h2 class="h-sec">${t('group.join')}</h2>
+          <div class="field"><label for="g-code">${t('group.code')}</label><input id="g-code" name="code" dir="ltr" autocomplete="off" placeholder="KH-7Q2M-X4PA" aria-describedby="g-code-hint g-code-err"><p id="g-code-hint" class="text-sm muted mt-1">${t('group.codeHint')}</p><p id="g-code-err" class="err" aria-live="polite"></p></div>
+          <button type="submit" class="btn">${icon('users', 18)} ${t('group.joinBtn')}</button>
+        </form>
+      </div>`;
+    root.querySelector('#create').addEventListener('submit', async e => {
+      e.preventDefault(); const i = e.target.elements.name, err = root.querySelector('#g-name-err');
+      if (!i.value.trim()) { i.setAttribute('aria-invalid', 'true'); err.textContent = t('group.errName'); return i.focus(); }
+      await S.createGroup(i.value); toast(t('group.created')); render();
+    });
+    root.querySelector('#join').addEventListener('submit', async e => {
+      e.preventDefault(); const i = e.target.elements.code, err = root.querySelector('#g-code-err');
+      try { await S.joinGroup(i.value); toast(t('group.joined')); render(); }
+      catch { i.setAttribute('aria-invalid', 'true'); err.textContent = t('group.errCode'); i.focus(); }
+    });
+  }
+
+  async function withGroup(g) {
+    const habits = await S.habits(), leader = g.board[0];
+    const chTitle = c => c.habit ? t('group.chTitle', { habit: `<bdi>${esc(c.habit)}</bdi>` }) : t('group.chDeleted');
+    root.innerHTML = `
+      <section class="card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-5" aria-labelledby="g-title">
+        <div><h2 id="g-title" class="h-sec"><bdi>${esc(g.name)}</bdi></h2><p class="muted">${I.plural('members', g.board.length)} · ${t('group.resets')}</p></div>
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="muted font-bold">${t('group.code')}:</span>
+          <span id="code" class="tilt px-4 py-1 select-all" dir="ltr" style="--r:-2;font-family:var(--f3);font-size:26px;border:2px dashed var(--ink);background:var(--field)">${esc(g.code)}</span>
+          <button type="button" id="copy" class="btn btn-ghost btn-sm">${icon('copy', 18)} ${t('group.copy')}</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="board-title">
+        <div class="flex items-end justify-between flex-wrap gap-3 mb-4">
+          <h2 id="board-title" class="h-sec">${t('group.week')}</h2>
+          ${leader ? `<p class="hand text-xl">${leader.me ? t('group.youLead') : t('group.leads', { name: `<bdi>${esc(leader.name)}</bdi>` })}</p>` : ''}
+        </div>
+        <div class="clipwrap"><div class="clip torn p-4 sm:p-6 overflow-x-auto">
+          <table class="datatable num">
+            <caption class="sr-only">${t('group.caption')}</caption>
+            <thead><tr><th scope="col" class="w-12">#</th><th scope="col">${t('board.name')}</th><th scope="col">${t('board.streak')}</th><th scope="col" style="text-align:end">${t('group.weekPts')}</th></tr></thead>
+            <tbody>${g.board.map((m, i) => `
+              <tr style="${m.me ? 'background:rgba(200,32,28,.08)' : ''}">
+                <td style="font-family:var(--f3);font-size:22px;color:${i === 0 ? 'var(--red)' : 'var(--ink)'}">${num(i + 1)}</td>
+                <td class="font-bold"><bdi>${esc(m.me ? t('common.you') : m.name)}</bdi> ${i === 0 ? `<span style="color:var(--yellow)" class="inline-block align-middle">${icon('crown', 18)}</span><span class="sr-only">(${t('group.leader')})</span>` : ''}
+                  ${m.me && m.hidden ? `<span class="text-sm muted font-medium block">${t('group.hiddenNote')}</span>` : ''}</td>
+                <td>${I.plural('days', m.streak)}</td>
+                <td style="text-align:end;font-family:var(--f3);font-size:20px">${num(m.week)}</td>
+              </tr>`).join('')}</tbody>
+          </table>
+        </div></div>
+      </section>
+
+      <section aria-labelledby="ch-title" class="grid lg:grid-cols-[1.3fr_1fr] gap-8 items-start">
+        <div>
+          <h2 id="ch-title" class="h-sec mb-4">${t('group.challenges')}</h2>
+          <ul class="grid gap-4">${g.challenges.length ? g.challenges.map(c => `
+            <li class="card p-5">
+              <div class="flex items-start justify-between gap-3 flex-wrap">
+                <div><p class="font-bold text-lg">${chTitle(c)}</p><p class="text-sm muted">${I.plural('days', c.days)} · ${t('group.with', { names: c.members.length ? c.members.map(m => `<bdi>${esc(m)}</bdi>`).join(t('common.listSep')) : t('group.theGroup') })}</p></div>
+                ${c.elapsed >= c.days ? `<span class="stamp tilt" style="--r:-8;width:70px;height:70px;font-size:14px">${t('group.ended')}</span>` : `<span class="text-sm font-bold">${t('group.dayOf', { a: num(c.elapsed), b: num(c.days) })}</span>`}
+              </div>
+              <p class="mt-3 font-bold">${t('group.mine', { a: num(c.mine), b: num(c.days) })}</p>
+              <div class="bar mt-1" role="progressbar" aria-label="${esc(t('group.progressAria'))}" aria-valuemin="0" aria-valuemax="${c.days}" aria-valuenow="${c.mine}"><i style="width:${(c.mine / c.days) * 100}%"></i></div>
+            </li>`).join('') : `<li class="card p-5 muted">${t('group.noChallenges')}</li>`}</ul>
+        </div>
+        <form id="new-ch" class="card p-5 grid gap-4" style="background:var(--news)" novalidate>
+          <h3 class="h-sec">${t('group.newCh')}</h3>
+          ${habits.length ? `
+          <div class="field"><label for="ch-habit">${t('group.habit')}</label><select id="ch-habit" name="habit">${habits.map(h => `<option value="${h.id}">${esc(h.name)}</option>`).join('')}</select></div>
+          <fieldset class="field"><legend class="font-bold mb-2">${t('group.duration')}</legend><div class="flex flex-wrap gap-2">
+            ${[3, 7, 14, 30].map(d => `<label class="choice"><input type="radio" name="days" value="${d}" ${d === 7 ? 'checked' : ''}>${I.plural('days', d)}</label>`).join('')}
+          </div></fieldset>
+          <button type="submit" class="btn">${t('group.startCh')}</button>` : `<p class="muted">${t('group.needHabit')} <a class="underline font-bold" href="habits.html">${t('nav.habits')}</a></p>`}
+        </form>
+      </section>
+
+      <section class="flex flex-wrap items-center gap-3" aria-label="${t('group.leave')}">
+        <button type="button" id="leave" class="btn btn-ghost btn-sm">${t('group.leave')}</button>
+        <span id="leave-confirm" class="flex flex-wrap items-center gap-2" hidden>
+          <span class="font-bold">${t('group.leaveConfirm')}</span>
+          <button type="button" id="leave-yes" class="btn btn-danger btn-sm">${t('group.leaveYes')}</button>
+          <button type="button" id="leave-no" class="btn btn-ghost btn-sm">${t('common.no')}</button>
+        </span>
+      </section>`;
+
+    root.querySelector('#copy').addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(g.code); toast(t('group.copied')); }
+      catch { const r = document.createRange(); r.selectNodeContents(root.querySelector('#code')); getSelection().removeAllRanges(); getSelection().addRange(r); toast(t('group.selected')); }
+    });
+    root.querySelector('#new-ch').addEventListener('submit', async e => {
+      e.preventDefault(); const f = e.target; if (!f.elements.habit) return;
+      await S.addChallenge({ habitId: f.elements.habit.value, days: f.elements.days.value }); toast(t('group.chStarted')); render();
+    });
+    const leave = root.querySelector('#leave'), conf = root.querySelector('#leave-confirm');
+    leave.addEventListener('click', () => { leave.hidden = true; conf.hidden = false; root.querySelector('#leave-no').focus(); });
+    root.querySelector('#leave-no').addEventListener('click', () => { conf.hidden = true; leave.hidden = false; leave.focus(); });
+    root.querySelector('#leave-yes').addEventListener('click', async () => { await S.leaveGroup(); toast(t('group.left')); render(); });
+  }
+
+  async function render() { const g = await S.group(); g ? withGroup(g) : noGroup(); }
+  render();
+})();
+</script>
+</body>
+</html>

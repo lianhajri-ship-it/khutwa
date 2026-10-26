@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>الرئيسية · لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/dada.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main id="content" class="grid gap-8 min-w-0">
+  <div>
+    <p id="today" class="muted font-bold"></p>
+    <h1 class="page-title"><span class="chip c-ink tilt" style="--r:-2">لوحة</span><span class="chip c-news tilt" style="--r:2">التحكم</span></h1>
+  </div>
+  <section id="kpis" class="grid grid-cols-2 xl:grid-cols-4 gap-5" aria-label="الأرقام الأساسية"></section>
+  <div class="grid xl:grid-cols-2 gap-8">
+    <section class="card p-5 grid gap-3 content-start" aria-labelledby="m-title">
+      <div class="flex items-center justify-between gap-3"><h2 id="m-title" class="h-sec">آخر طلبات الاتصال الجديدة</h2><a href="messages.html" class="font-bold underline">كلها</a></div>
+      <ul id="latest-messages" class="grid gap-2"></ul>
+    </section>
+    <section class="card p-5 grid gap-3 content-start" aria-labelledby="u-title">
+      <div class="flex items-center justify-between gap-3"><h2 id="u-title" class="h-sec">آخر المشتركين</h2><a href="members.html" class="font-bold underline">كلهم</a></div>
+      <ul id="latest-users" class="grid gap-2"></ul>
+    </section>
+  </div>
+  <section aria-labelledby="q-title">
+    <h2 id="q-title" class="h-sec mb-3">اختصارات</h2>
+    <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4" id="shortcuts"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../assets/config.js"></script>
+<script src="admin.js"></script>
+<script>
+Admin.start('index', async () => {
+  const { sb, esc, num, when, must, svg, TOPIC } = Admin;
+  document.getElementById('today').textContent = new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-arab', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+
+  const [o, us, ms] = await Promise.all([
+    sb.rpc('admin_overview'), sb.rpc('admin_users'),
+    sb.from('contact_messages').select('id, name, topic, created_at').eq('status', 'new').order('created_at', { ascending: false }).limit(5),
+  ]);
+  const ov = must(o, 'ما قدرنا نحمّل الأرقام'), users = must(us, 'ما قدرنا نحمّل المستخدمين'), msgs = must(ms, 'ما قدرنا نحمّل الرسائل');
+
+  if (ov) {
+    const tile = (label, v, note) => `<div class="card p-5"><p class="font-bold muted text-sm">${label}</p><p class="kpi num">${num(v)}</p><p class="text-sm muted">${note}</p></div>`;
+    document.getElementById('kpis').innerHTML =
+      tile('كل المستخدمين', ov.users, `+${num(ov.users_week)} آخر ٧ أيام`) +
+      tile('نشطين اليوم', ov.active_today, `${num(ov.active_week)} آخر ٧ أيام`) +
+      tile('إنجازات اليوم', ov.done_today, `${num(ov.done_week)} آخر ٧ أيام`) +
+      tile('طلبات اتصال جديدة', ov.messages_new, `${num(ov.groups)} مجموعة · ${num(ov.ideas)} فكرة سريعة`);
+  }
+  if (msgs) document.getElementById('latest-messages').innerHTML = msgs.length ? msgs.map(m =>
+      `<li class="flex items-center justify-between gap-3 border-b border-dashed pb-2" style="border-color:rgba(0,0,0,.25)"><span class="min-w-0"><b><bdi>${esc(m.name)}</bdi></b> · <span class="muted">${esc(TOPIC[m.topic] || m.topic)}</span></span><span class="text-sm muted shrink-0">${when(m.created_at)}</span></li>`).join('')
+    : '<li class="muted">ما فيه طلبات جديدة.</li>';
+  if (users) document.getElementById('latest-users').innerHTML = users.slice(0, 5).map(u =>
+      `<li class="flex items-center justify-between gap-3 border-b border-dashed pb-2" style="border-color:rgba(0,0,0,.25)"><span class="min-w-0 truncate"><b><bdi>${esc(u.name || '—')}</bdi></b> · <span class="muted" dir="ltr">${esc(u.email)}</span></span><span class="text-sm muted shrink-0">${when(u.created_at)}</span></li>`).join('') || '<li class="muted">ما فيه مستخدمين للحين.</li>';
+
+  document.getElementById('shortcuts').innerHTML = [
+    ['stats.html', 'chart', 'إحصائيات عامة', 'التسجيلات والنشاط والعادات الأشهر'],
+    ['members.html', 'users', 'العضويات', 'بحث، إخفاء، إخراج من مجموعة، حذف'],
+    ['ideas.html', 'star', 'الأفكار السريعة', 'اللي تطلع في صفحة «عاداتي»'],
+    ['messages.html', 'mail', 'طلبات الاتصال', 'الرد وتغيير الحالة'],
+  ].map(([href, ic, t, d]) => `<a href="${href}" class="card p-5 grid gap-2 hover:-translate-y-0.5 transition-transform">${svg(ic, 26)}<b class="text-lg">${t}</b><span class="text-sm muted">${d}</span></a>`).join('');
+});
+</script>
+</body>
+</html>

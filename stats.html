@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.stats">إحصائياتي · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+</head>
+<body>
+<main id="main" class="wrap py-8 grid gap-10">
+  <h1 class="page-title"><span class="sr-only" data-i18n="stats.sr">إحصائياتي</span><span aria-hidden="true"><span class="chip c-news tilt" style="--r:-2" data-i18n="stats.w1">أسبوعك</span></span> <span aria-hidden="true"><span class="chip c-redbg tilt" style="--r:3" data-i18n="stats.w2">بالأرقام</span></span></h1>
+
+  <section id="kpis" class="grid grid-cols-2 lg:grid-cols-4 gap-5" data-i18n-attr="aria-label:stats.summary"></section>
+
+  <section aria-labelledby="week-title" class="card p-5 sm:p-6">
+    <h2 id="week-title" class="h-sec" data-i18n="stats.chartTitle"></h2>
+    <p class="muted text-sm mb-4" data-i18n="stats.chartHint"></p>
+    <div id="chart" class="chart"></div>
+    <details class="mt-4"><summary class="font-bold underline underline-offset-4" data-i18n="stats.asTable"></summary><div id="table" class="mt-3 overflow-x-auto"></div></details>
+  </section>
+
+  <section aria-labelledby="habit-title" class="card p-5 sm:p-6">
+    <h2 id="habit-title" class="h-sec mb-1" data-i18n="stats.perHabit"></h2>
+    <p class="muted text-sm mb-5" data-i18n="stats.perHabitHint"></p>
+    <ul id="habits" class="grid gap-4"></ul>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(async () => {
+  const S = KhutwaStore, I = KhutwaI18n, { t, esc, num, icon } = KhutwaUI;
+  if (!(await KhutwaUI.shell('stats'))) return;
+
+  const [sum, week, month, perHabit] = await Promise.all([S.summary(), S.history(7), S.history(30), S.habitHistory(7)]);
+  const pct = d => (d.total ? d.done / d.total : 0);
+  const weekPct = Math.round(week.reduce((a, d) => a + pct(d), 0) / week.length * 100);
+  const delta = sum.weekPoints - sum.lastWeekPoints;
+  const monthDone = month.reduce((a, d) => a + d.done, 0);
+
+  const tile = (label, value, note) => `<div class="card p-5"><p class="font-bold muted text-sm">${label}</p><p class="num" style="font-family:var(--f3);font-size:40px;line-height:1.25">${value}</p>${note ? `<p class="text-sm muted">${note}</p>` : ''}</div>`;
+  document.getElementById('kpis').innerHTML =
+    tile(t('stats.k1'), I.pct(weekPct), t('stats.k1n')) +
+    tile(t('stats.k2'), num(sum.weekPoints), t(delta >= 0 ? 'stats.up' : 'stats.down', { n: num(Math.abs(delta)) })) +
+    tile(t('stats.k3'), I.plural('days', sum.bestStreak), t('stats.k3n', { d: I.plural('days', sum.streak) })) +
+    tile(t('stats.k4'), num(monthDone), t('stats.k4n'));
+
+  /* ---- 7-day bar chart: one series, one hue; today in red. Time runs in reading direction (oldest on the right in Arabic). ---- */
+  const rtl = I.dir === 'rtl';
+  const rows = week.map((d, i) => ({ ...d, p: pct(d), label: i === week.length - 1 ? t('stats.today') : I.date(new Date(d.date + 'T00:00:00'), { weekday: 'long' }) }));
+  const W = 600, H = 250, top = 24, bottom = 40, axis = 48, pad = 8;
+  const left = rtl ? pad : axis, iw = W - axis - pad, ih = H - top - bottom, step = iw / rows.length, bw = Math.min(40, step * .5), base = top + ih;
+  const y = v => top + ih * (1 - v);
+  const cx = i => (rtl ? left + iw - step * (i + .5) : left + step * (i + .5));
+  const axisX = rtl ? W - 2 : 2, axisAnchor = rtl ? 'end' : 'start';
+  const barPath = (x, h) => { if (h <= 0) return ''; const r = Math.min(4, h, bw / 2); return `M${x},${base} v${-(h - r)} q0,${-r} ${r},${-r} h${bw - 2 * r} q${r},0 ${r},${r} v${h - r} z`; };
+  const font = 'IBM Plex Sans Arabic, sans-serif';
+
+  const chart = document.getElementById('chart');
+  chart.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="direction:ltr" role="group" aria-label="${t('stats.chartAria')}">
+    ${[0, .25, .5, .75, 1].map(v => `<line x1="${left}" x2="${left + iw}" y1="${y(v)}" y2="${y(v)}" stroke="var(--ink)" stroke-opacity="${v === 0 ? .7 : .12}" stroke-width="${v === 0 ? 1.5 : 1}"/>
+      <text x="${axisX}" y="${y(v) + 5}" text-anchor="${axisAnchor}" font-size="13" fill="var(--ink2)" font-family="${font}">${I.pct(v * 100)}</text>`).join('')}
+    ${rows.map((d, i) => { const today = i === rows.length - 1, x = cx(i) - bw / 2; return `
+      <g class="hit" tabindex="0" data-i="${i}" aria-label="${d.label}: ${t('stats.of', { a: num(d.done), b: num(d.total) })}, ${I.pct(Math.round(d.p * 100))}">
+        <rect class="hit-bg" x="${cx(i) - step / 2}" y="${top}" width="${step}" height="${ih}" fill="transparent"/>
+        <path d="${barPath(x, ih * d.p)}" fill="${today ? 'var(--red)' : 'var(--ink)'}"/>
+        ${today ? `<text x="${cx(i)}" y="${y(d.p) - 8}" text-anchor="middle" font-size="14" font-weight="700" fill="var(--ink)" font-family="${font}">${I.pct(Math.round(d.p * 100))}</text>` : ''}
+        <text x="${cx(i)}" y="${H - 12}" text-anchor="middle" font-size="13" font-weight="${today ? 700 : 400}" fill="${today ? 'var(--ink)' : 'var(--ink2)'}" font-family="${font}">${d.label}</text>
+      </g>`; }).join('')}
+  </svg><div class="tip" hidden></div>`;
+
+  const tip = chart.querySelector('.tip'), svg = chart.querySelector('svg');
+  function showTip(g) {
+    const i = +g.dataset.i, d = rows[i], k = svg.getBoundingClientRect().width / W;
+    tip.innerHTML = `<b>${d.label}</b> · ${t('stats.of', { a: num(d.done), b: num(d.total) })} (${I.pct(Math.round(d.p * 100))})`;
+    tip.style.left = `${cx(i) * k}px`; tip.style.top = `${(y(d.p) - 10) * k}px`; tip.hidden = false;
+  }
+  chart.querySelectorAll('.hit').forEach(g => {
+    g.addEventListener('mouseenter', () => showTip(g)); g.addEventListener('focus', () => showTip(g));
+    g.addEventListener('mouseleave', () => (tip.hidden = true)); g.addEventListener('blur', () => (tip.hidden = true));
+  });
+
+  document.getElementById('table').innerHTML = `<table class="datatable num"><thead><tr><th scope="col">${t('stats.thDay')}</th><th scope="col">${t('stats.thDone')}</th><th scope="col">${t('stats.thPct')}</th><th scope="col">${t('board.points')}</th></tr></thead>
+    <tbody>${[...rows].reverse().map(d => `<tr><td>${d.label}</td><td>${t('stats.of', { a: num(d.done), b: num(d.total) })}</td><td>${I.pct(Math.round(d.p * 100))}</td><td>${num(d.pts)}</td></tr>`).join('')}</tbody></table>`;
+
+  /* ---- per-habit horizontal bars, direct-labeled ---- */
+  document.getElementById('habits').innerHTML = perHabit.length ? perHabit.map(h => `
+    <li class="grid sm:grid-cols-[minmax(0,14rem)_1fr_auto] items-center gap-x-4 gap-y-1">
+      <span class="font-bold flex items-center gap-2 min-w-0">${icon(h.icon, 20)}<bdi class="truncate">${esc(h.name)}</bdi></span>
+      <div class="bar" style="height:16px" aria-hidden="true"><i style="width:${(h.doneDays / h.days) * 100}%"></i></div>
+      <span class="num text-sm font-bold">${t('stats.daysOf', { a: num(h.doneDays), b: num(h.days) })}</span>
+    </li>`).join('') : `<li class="muted">${t('habits.empty')}</li>`;
+})();
+</script>
+</body>
+</html>

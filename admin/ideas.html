@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>الأفكار السريعة · لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/dada.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main id="content" class="grid gap-8 min-w-0">
+  <div>
+    <h1 class="page-title"><span class="chip c-news tilt" style="--r:-2">الأفكار</span><span class="chip c-ink tilt" style="--r:3">السريعة</span></h1>
+    <p class="muted mt-2">هذي الأفكار تطلع للمستخدمين في صفحة «عاداتي»، ويضيفونها بضغطة. تظهر بنفس الترتيب اللي هنا، والمخفية ما تطلع لأحد.</p>
+  </div>
+
+  <form id="add" class="card p-5 sm:p-6 grid gap-4" novalidate aria-labelledby="add-title">
+    <h2 id="add-title" class="h-sec">فكرة جديدة</h2>
+    <div class="grid md:grid-cols-2 gap-4">
+      <div class="field"><label for="a-ar">الاسم بالعربي</label><input id="a-ar" name="name_ar" dir="rtl" maxlength="40" placeholder="مثلًا: مشي ١٠ آلاف خطوة"></div>
+      <div class="field"><label for="a-en">الاسم بالإنجليزي</label><input id="a-en" name="name_en" dir="ltr" maxlength="40" placeholder="e.g. Walk 10,000 steps"></div>
+    </div>
+    <div class="grid sm:grid-cols-[160px_1fr] gap-4 items-end">
+      <div class="field"><label for="a-target">كم مرة باليوم</label><input id="a-target" name="target" type="number" min="1" max="20" value="1"></div>
+      <fieldset class="field"><legend class="font-bold mb-2">الأيقونة</legend><div class="flex flex-wrap gap-2" id="a-icons"></div></fieldset>
+    </div>
+    <p id="a-err" class="err" role="alert"></p>
+    <button type="submit" class="btn justify-self-start">إضافة الفكرة</button>
+  </form>
+
+  <section aria-labelledby="list-title" class="grid gap-4">
+    <h2 id="list-title" class="h-sec">الأفكار الحالية</h2>
+    <ul id="list" class="grid gap-4"></ul>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../assets/config.js"></script>
+<script src="admin.js"></script>
+<script>
+Admin.start('ideas', async () => {
+  const { sb, esc, num, must, ok, toast, ICON_NAME } = Admin;
+  const ICONS = Object.keys(ICON_NAME);
+  let ideas = [];
+  const radios = (name, checked) => ICONS.map(k => `<label class="choice"><input type="radio" name="${name}" value="${k}" ${k === checked ? 'checked' : ''}>${esc(ICON_NAME[k])}</label>`).join('');
+  document.getElementById('a-icons').innerHTML = radios('icon', 'star');
+
+  async function load() {
+    const d = must(await sb.from('habit_ideas').select('*').order('sort').order('created_at'), 'ما قدرنا نحمّل الأفكار');
+    if (d) { ideas = d; render(); }
+  }
+
+  function render() {
+    document.getElementById('list').innerHTML = ideas.map((x, i) => `
+      <li class="card p-5 grid gap-4" data-id="${esc(x.id)}" style="${x.active ? '' : 'opacity:.7'}">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <p class="font-bold"><span class="num">${num(i + 1)}.</span> <bdi>${esc(x.name_ar)}</bdi> · <span dir="ltr">${esc(x.name_en)}</span>
+            ${x.active ? '' : '<span class="chip c-news" style="font-family:var(--fb);font-size:12px">مخفية</span>'}</p>
+          <div class="flex gap-2">
+            <button type="button" class="icon-btn" data-move="-1" aria-label="فوق" ${i === 0 ? 'disabled' : ''}>▲</button>
+            <button type="button" class="icon-btn" data-move="1" aria-label="تحت" ${i === ideas.length - 1 ? 'disabled' : ''}>▼</button>
+          </div>
+        </div>
+        <form class="grid gap-3" novalidate>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div class="field"><label for="ar-${esc(x.id)}">الاسم بالعربي</label><input id="ar-${esc(x.id)}" name="name_ar" dir="rtl" maxlength="40" value="${esc(x.name_ar)}"></div>
+            <div class="field"><label for="en-${esc(x.id)}">الاسم بالإنجليزي</label><input id="en-${esc(x.id)}" name="name_en" dir="ltr" maxlength="40" value="${esc(x.name_en)}"></div>
+          </div>
+          <div class="grid sm:grid-cols-[160px_1fr] gap-3 items-end">
+            <div class="field"><label for="t-${esc(x.id)}">مرات باليوم</label><input id="t-${esc(x.id)}" name="target" type="number" min="1" max="20" value="${x.target}"></div>
+            <fieldset class="field"><legend class="font-bold mb-2">الأيقونة</legend><div class="flex flex-wrap gap-2">${radios('icon-' + x.id, x.icon)}</div></fieldset>
+          </div>
+          <label class="flex items-center gap-3 font-bold" for="act-${esc(x.id)}"><input id="act-${esc(x.id)}" name="active" type="checkbox" class="switch" ${x.active ? 'checked' : ''}> تظهر للمستخدمين</label>
+          <div class="flex flex-wrap gap-2" data-actions>
+            <button type="submit" class="btn btn-sm">حفظ التعديلات</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-del style="color:var(--red)">حذف</button>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" data-confirm hidden>
+            <span class="font-bold">تحذف الفكرة؟ (عادات المستخدمين اللي أضافوها ما تتأثر)</span>
+            <button type="button" class="btn btn-danger btn-sm" data-del-yes>إيه، احذف</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-del-no>لا</button>
+          </div>
+        </form>
+      </li>`).join('') || '<li class="card p-6 muted">ما فيه أفكار. أضف وحدة من فوق.</li>';
+  }
+
+  const valid = f => {
+    const ar = f.elements.name_ar.value.trim(), en = f.elements.name_en.value.trim();
+    const target = Math.max(1, Math.min(20, Math.round(+f.elements.target.value || 1)));
+    return ar && en ? { name_ar: ar, name_en: en, target } : null;
+  };
+
+  document.getElementById('add').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target, v = valid(f);
+    document.getElementById('a-err').textContent = v ? '' : 'اكتب الاسم بالعربي والإنجليزي';
+    if (!v) return;
+    const sort = ideas.reduce((m, x) => Math.max(m, x.sort), 0) + 1;
+    if (!ok(await sb.from('habit_ideas').insert({ ...v, icon: f.elements.icon.value, sort }), 'ما قدرنا نضيف الفكرة')) return;
+    f.reset(); toast('انضافت الفكرة'); load();
+  });
+
+  const list = document.getElementById('list');
+  list.addEventListener('submit', async e => {
+    e.preventDefault();
+    const li = e.target.closest('[data-id]'), id = li.dataset.id, f = e.target, v = valid(f);
+    if (!v) return toast('اكتب الاسم بالعربي والإنجليزي');
+    if (!ok(await sb.from('habit_ideas').update({ ...v, icon: f.elements['icon-' + id].value, active: f.elements.active.checked }).eq('id', id), 'ما قدرنا نحفظ')) return;
+    toast('انحفظت التعديلات'); load();
+  });
+  list.addEventListener('click', async e => {
+    const li = e.target.closest('[data-id]'); if (!li) return;
+    const id = li.dataset.id, q = s => li.querySelector(s);
+    const mv = e.target.closest('[data-move]');
+    if (mv) {
+      const i = ideas.findIndex(x => x.id === id), j = i + Number(mv.dataset.move);
+      if (j < 0 || j >= ideas.length) return;
+      [ideas[i], ideas[j]] = [ideas[j], ideas[i]];
+      const updates = ideas.map((x, n) => sb.from('habit_ideas').update({ sort: n + 1 }).eq('id', x.id));
+      const res = await Promise.all(updates);
+      if (res.some(r => r.error)) return ok(res.find(r => r.error), 'ما قدرنا نغيّر الترتيب');
+      return load();
+    }
+    if (e.target.closest('[data-del]')) { q('[data-actions]').hidden = true; q('[data-confirm]').hidden = false; q('[data-del-no]').focus(); return; }
+    if (e.target.closest('[data-del-no]')) { q('[data-confirm]').hidden = true; q('[data-actions]').hidden = false; return; }
+    if (e.target.closest('[data-del-yes]')) {
+      if (!ok(await sb.from('habit_ideas').delete().eq('id', id), 'ما قدرنا نحذف الفكرة')) return;
+      toast('انحذفت الفكرة'); load();
+    }
+  });
+
+  await load();
+});
+</script>
+</body>
+</html>

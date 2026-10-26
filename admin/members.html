@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>العضويات · لوحة التحكم</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/dada.css">
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<main id="content" class="grid gap-6 min-w-0">
+  <h1 class="page-title"><span class="chip c-ink tilt" style="--r:-2">إدارة</span><span class="chip c-news tilt" style="--r:3">العضويات</span></h1>
+
+  <div class="flex flex-wrap items-end gap-4">
+    <div class="field w-full sm:w-80"><label for="q">بحث بالاسم أو الإيميل</label><input id="q" type="search" dir="auto"></div>
+    <div class="flex flex-wrap gap-2" role="group" aria-label="تصفية">
+      <label class="choice"><input type="radio" name="f" value="all" checked>الكل</label>
+      <label class="choice"><input type="radio" name="f" value="active">نشطين هالأسبوع</label>
+      <label class="choice"><input type="radio" name="f" value="nohabits">بدون عادات</label>
+      <label class="choice"><input type="radio" name="f" value="group">في مجموعة</label>
+      <label class="choice"><input type="radio" name="f" value="hidden">مخفيين</label>
+      <label class="choice"><input type="radio" name="f" value="admin">المدراء</label>
+    </div>
+  </div>
+
+  <ul id="list" class="grid gap-4"></ul>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="../assets/config.js"></script>
+<script src="admin.js"></script>
+<script>
+Admin.start('members', async () => {
+  const { sb, esc, num, when, must, ok, toast } = Admin;
+  let users = [];
+  const FILTERS = {
+    all: () => true, active: u => u.done_week > 0, nohabits: u => !u.habits, group: u => !!u.group_name, hidden: u => u.hidden, admin: u => u.is_admin,
+  };
+
+  async function load() { const d = must(await sb.rpc('admin_users'), 'ما قدرنا نحمّل المستخدمين'); if (d) { users = d; render(); } }
+
+  function render() {
+    const q = document.getElementById('q').value.trim().toLowerCase();
+    const f = FILTERS[document.querySelector('input[name="f"]:checked').value];
+    const rows = users.filter(u => f(u) && (!q || (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)));
+    const stat = (label, v) => `<div><dt class="text-xs muted">${label}</dt><dd class="font-bold num">${v}</dd></div>`;
+    document.getElementById('list').innerHTML = `<li class="font-bold">${num(rows.length)} من ${num(users.length)} عضو</li>` + (rows.map(u => `
+      <li class="card p-5 grid gap-4" data-id="${esc(u.id)}">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-lg font-bold"><bdi>${esc(u.name || '—')}</bdi>
+              ${u.is_admin ? '<span class="chip c-redbg" style="font-family:var(--fb);font-size:12px">مدير</span>' : ''}
+              ${u.hidden ? '<span class="chip c-news" style="font-family:var(--fb);font-size:12px">مخفي من المتصدرين</span>' : ''}</p>
+            <p class="muted select-all" dir="ltr" style="text-align:start">${esc(u.email)}</p>
+          </div>
+          <p class="text-sm muted">سجّل ${when(u.created_at)}<br>آخر دخول ${when(u.last_sign_in_at)}</p>
+        </div>
+        <dl class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+          ${stat('العادات', num(u.habits))}${stat('إنجاز ٧ أيام', num(u.done_week))}${stat('نقاط الأسبوع', num(u.week_points))}
+          ${stat('السلسلة', num(u.streak))}${stat('المجموعة', `<bdi>${esc(u.group_name || '—')}</bdi>`)}${stat('الحالة', u.done_week ? 'نشط' : 'غير نشط')}
+        </dl>
+        <div class="flex flex-wrap gap-2" data-actions>
+          <button type="button" class="btn btn-ghost btn-sm" data-hide="${u.hidden ? 'false' : 'true'}">${u.hidden ? 'إظهار في المتصدرين' : 'إخفاء من المتصدرين'}</button>
+          ${u.group_name ? '<button type="button" class="btn btn-ghost btn-sm" data-ungroup>إخراج من المجموعة</button>' : ''}
+          ${u.is_admin ? '' : '<button type="button" class="btn btn-ghost btn-sm" data-del style="color:var(--red)">حذف الحساب</button>'}
+        </div>
+        <div class="flex flex-wrap items-center gap-2" data-confirm hidden>
+          <span class="font-bold">تحذف حساب <bdi>${esc(u.name || u.email)}</bdi> وكل بياناته نهائيًا؟</span>
+          <button type="button" class="btn btn-danger btn-sm" data-del-yes>إيه، احذف</button>
+          <button type="button" class="btn btn-ghost btn-sm" data-del-no>لا</button>
+        </div>
+      </li>`).join('') || '<li class="card p-6 muted">ما فيه أعضاء بهذا البحث.</li>');
+  }
+
+  document.getElementById('q').addEventListener('input', render);
+  document.querySelectorAll('input[name="f"]').forEach(r => r.addEventListener('change', render));
+  document.getElementById('list').addEventListener('click', async e => {
+    const li = e.target.closest('[data-id]'); if (!li) return;
+    const id = li.dataset.id, q = s => li.querySelector(s);
+    const hide = e.target.closest('[data-hide]');
+    if (hide) {
+      if (!ok(await sb.rpc('admin_set_hidden', { p_user: id, p_hidden: hide.dataset.hide === 'true' }), 'ما قدرنا نغيّر الإخفاء')) return;
+      toast(hide.dataset.hide === 'true' ? 'صار مخفي من المتصدرين' : 'صار يظهر في المتصدرين'); return load();
+    }
+    if (e.target.closest('[data-ungroup]')) {
+      if (!ok(await sb.rpc('admin_remove_from_group', { p_user: id }), 'ما قدرنا نخرجه من المجموعة')) return;
+      toast('طلع من المجموعة'); return load();
+    }
+    if (e.target.closest('[data-del]')) { q('[data-actions]').hidden = true; q('[data-confirm]').hidden = false; q('[data-del-no]').focus(); return; }
+    if (e.target.closest('[data-del-no]')) { q('[data-confirm]').hidden = true; q('[data-actions]').hidden = false; return; }
+    if (e.target.closest('[data-del-yes]')) {
+      if (!ok(await sb.rpc('admin_delete_user', { p_user: id }), 'ما قدرنا نحذف الحساب')) return;
+      toast('انحذف الحساب'); return load();
+    }
+  });
+
+  await load();
+});
+</script>
+</body>
+</html>

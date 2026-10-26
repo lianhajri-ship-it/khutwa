@@ -1,0 +1,11 @@
+# secrets — never commit keys
+.env
+.env.*
+*.local
+# real project settings stay local (copy the *.example files)
+assets/config.js
+supabase/admin.sql
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/

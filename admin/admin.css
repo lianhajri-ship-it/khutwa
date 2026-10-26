@@ -1,0 +1,31 @@
+/* خطوة — admin pages (PRIVATE). Builds on ../assets/dada.css; the admin side stays calm and dense. */
+.admin-layout { display: grid; gap: 28px; padding-block: 28px; }
+@media (min-width: 1024px) { .admin-layout { grid-template-columns: 230px minmax(0, 1fr); align-items: start; } }
+
+.side { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+@media (min-width: 1024px) { .side { flex-direction: column; position: sticky; top: 88px; overflow: visible; } }
+.side a { display: flex; align-items: center; gap: 10px; padding: 10px 14px; font-weight: 700; border: 2px solid var(--ink); background: var(--clip); white-space: nowrap; min-height: 44px; }
+.side a:hover { background: var(--news); }
+.side a[aria-current="page"] { background: var(--ink); color: var(--paper); }
+.badge { background: var(--red); color: var(--on-red); font-size: 12px; padding: 0 8px; border-radius: 999px; line-height: 1.7; margin-inline-start: auto; }
+
+.kpi { font-family: var(--f3); font-size: 40px; line-height: 1.2; }
+.scroll { overflow-x: auto; }
+.msg-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.datatable td, .datatable th { white-space: nowrap; }
+.datatable td.wrap { white-space: normal; }
+
+/* vertical bar chart: one series, one hue, today in red */
+.vbars { display: grid; gap: 4px; align-items: end; height: 170px; border-bottom: 2px solid var(--ink); }
+.vbars .col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; outline-offset: 2px; }
+.vbars .col i { display: block; background: var(--ink); border-radius: 4px 4px 0 0; }
+.vbars .col.today i { background: var(--red); }
+.vbars .col:hover i, .vbars .col:focus-visible i { opacity: .7; }
+.vbars .val { font-size: 12px; font-weight: 700; text-align: center; }
+
+/* horizontal bars with direct labels */
+.hbar { display: grid; grid-template-columns: minmax(0, 12rem) 1fr auto; gap: 12px; align-items: center; }
+.hbar .track { height: 14px; background: var(--news); border: 2px solid var(--ink); }
+.hbar .track i { display: block; height: 100%; background: var(--red); }
+
+.mini-input { min-height: 40px !important; padding: 4px 10px !important; font-size: 15px !important; }

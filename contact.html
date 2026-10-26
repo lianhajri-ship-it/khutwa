@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.contact">تواصل معنا · خطوة</title>
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+<style>
+  .hp { position: absolute; inset-inline-start: -9999px; width: 1px; height: 1px; overflow: hidden; }   /* spam trap, hidden from people */
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap flex items-center justify-between gap-4 py-3">
+    <a href="index.html" class="logo tilt" style="--r:-3" data-i18n="brand">خطوة</a>
+    <div class="flex items-center gap-3">
+      <span data-lang-slot></span>
+      <a href="index.html" class="font-bold underline underline-offset-4" data-i18n="privacy.back">رجوع للرئيسية</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="wrap py-10">
+  <div class="max-w-2xl">
+    <h1 class="page-title"><span class="sr-only" data-i18n="footer.contact"></span><span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-3" data-i18n="contact.w1"></span><span class="chip c-redbg tilt" style="--r:2" data-i18n="contact.w2"></span></span></h1>
+    <p class="mt-4 text-lg muted" data-i18n="contact.intro"></p>
+
+    <form id="contact" class="card p-5 sm:p-7 mt-8 grid gap-5" novalidate>
+      <div class="grid sm:grid-cols-2 gap-5">
+        <div class="field">
+          <label for="c-name" data-i18n="contact.name"></label>
+          <input id="c-name" name="name" dir="auto" maxlength="60" autocomplete="name" aria-describedby="c-name-err">
+          <p id="c-name-err" class="err" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="c-email" data-i18n="contact.email"></label>
+          <input id="c-email" name="email" type="email" dir="ltr" maxlength="120" autocomplete="email" aria-describedby="c-email-hint c-email-err">
+          <p id="c-email-hint" class="text-sm muted mt-1" data-i18n="contact.emailHint"></p>
+          <p id="c-email-err" class="err" aria-live="polite"></p>
+        </div>
+      </div>
+      <fieldset class="field">
+        <legend class="font-bold mb-2" data-i18n="contact.topic"></legend>
+        <div class="flex flex-wrap gap-2">
+          <label class="choice"><input type="radio" name="topic" value="suggestion" checked><span data-i18n="contact.t.suggestion"></span></label>
+          <label class="choice"><input type="radio" name="topic" value="problem"><span data-i18n="contact.t.problem"></span></label>
+          <label class="choice"><input type="radio" name="topic" value="account"><span data-i18n="contact.t.account"></span></label>
+          <label class="choice"><input type="radio" name="topic" value="other"><span data-i18n="contact.t.other"></span></label>
+        </div>
+      </fieldset>
+      <div class="field">
+        <label for="c-message" data-i18n="contact.message"></label>
+        <textarea id="c-message" name="message" dir="auto" maxlength="2000" aria-describedby="c-count c-message-err"></textarea>
+        <p id="c-count" class="text-sm muted mt-1 num"></p>
+        <p id="c-message-err" class="err" aria-live="polite"></p>
+      </div>
+      <div class="hp" aria-hidden="true"><label for="c-website">Website</label><input id="c-website" name="website" tabindex="-1" autocomplete="off"></div>
+      <p id="c-msg" class="err" role="alert"></p>
+      <div class="flex flex-wrap items-center gap-4">
+        <button type="submit" class="btn" data-i18n="contact.send"></button>
+        <p class="text-sm muted"><span data-i18n="contact.privacy"></span> <a href="privacy.html" class="underline" data-i18n="footer.privacy"></a></p>
+      </div>
+    </form>
+
+    <div id="sent" class="card p-6 mt-8 flex flex-wrap items-center gap-5" style="background:var(--yellow)" role="status" hidden>
+      <div class="stamp tilt shrink-0" style="--r:-10;width:84px;height:84px;font-size:16px;box-shadow:inset 0 0 0 5px var(--yellow), inset 0 0 0 7px var(--red)" data-i18n="stamp.approved"></div>
+      <div class="flex-1 min-w-0">
+        <p class="font-bold text-lg" data-i18n="contact.sent"></p>
+        <button type="button" id="again" class="underline font-bold mt-2" data-i18n="contact.another"></button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="py-8 border-t-2" style="border-color:var(--ink)">
+  <p class="wrap text-sm muted" data-i18n="footer.rights"></p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(function () {
+  const S = KhutwaStore, I = KhutwaI18n, t = I.t;
+  I.apply();
+  KhutwaUI.injectSprite();
+  document.querySelector('[data-lang-slot]').outerHTML = KhutwaUI.langButton();
+
+  const form = document.getElementById('contact'), sent = document.getElementById('sent');
+  const { name, email, message, website } = form.elements;
+  const count = document.getElementById('c-count');
+  const updateCount = () => { count.textContent = t('contact.count', { n: I.num(message.value.length) }); };
+  message.addEventListener('input', updateCount); updateCount();
+
+  // Signed-in visitors get their name and email filled in.
+  S.contactDefaults().then(d => { if (d) { if (!name.value) name.value = d.name; if (!email.value) email.value = d.email; } }).catch(() => {});
+
+  const fail = (input, msg) => { input.setAttribute('aria-invalid', 'true'); document.getElementById(input.id + '-err').textContent = msg; };
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    form.querySelectorAll('.err').forEach(x => (x.textContent = ''));
+    form.querySelectorAll('[aria-invalid]').forEach(x => x.removeAttribute('aria-invalid'));
+    let bad = null;
+    if (!name.value.trim()) { fail(name, t('err.name')); bad = bad || name; }
+    if (!emailOk(email.value)) { fail(email, t('err.email')); bad = bad || email; }
+    if (message.value.trim().length < 5) { fail(message, t('err.message')); bad = bad || message; }
+    if (bad) return bad.focus();
+    if (website.value) { form.hidden = true; sent.hidden = false; return; }   // a bot filled the hidden field: pretend it worked
+
+    const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
+    try {
+      await S.sendContact({ name: name.value, email: email.value, topic: form.elements.topic.value, message: message.value });
+      message.value = ''; updateCount();
+      form.hidden = true; sent.hidden = false; sent.querySelector('button').focus();
+    } catch (err) {
+      document.getElementById('c-msg').textContent = t(err.message === 'too_many' ? 'err.tooMany' : err.message === 'network' ? 'err.network' : 'err.generic');
+    } finally { btn.disabled = false; }
+  });
+  document.getElementById('again').addEventListener('click', () => { sent.hidden = true; form.hidden = false; message.focus(); });
+})();
+</script>
+</body>
+</html>

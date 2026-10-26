@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="title.index">خطوة — كل يوم خطوة، وكل خطوة تفرق</title>
+<meta name="description" data-i18n-attr="content:meta.desc" content="خطوة: موقع يساعدك تبني عادات يومية صحية، تجمع نقاط، تتحدى أصحابك، وتحافظ على سلسلة أيامك.">
+<script src="assets/i18n.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Alfa+Slab+One&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/dada.css">
+<style>
+  /* landing-only pieces; tokens and shared components live in assets/dada.css */
+  .sec-title { font-size: clamp(32px, 5vw, 54px); font-weight: 700; line-height: 1.5; }
+  .clipwrap:hover { animation: jitter .35s ease-in-out; }
+  .strip { position: absolute; inset-inline: -20%; white-space: nowrap; overflow: hidden; z-index: 0; }
+  .track { display: inline-block; animation: marquee 30s linear infinite; }
+  [dir="ltr"] .track { animation-name: marquee-ltr; }
+  @keyframes marquee { to { transform: translateX(50%); } }
+  @keyframes marquee-ltr { to { transform: translateX(-50%); } }
+  @keyframes jitter { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 14px; padding: 7px 0; border-bottom: 1px dashed rgba(0,0,0,.28); }
+  .row:last-child { border-bottom: 0; }
+  .how-arrow { transform: rotate(180deg); }
+  [dir="ltr"] .how-arrow { transform: scaleY(-1); }
+  .stamp.on-paper { box-shadow: inset 0 0 0 5px var(--paper), inset 0 0 0 7px var(--red); background: var(--paper); }
+  details summary { list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details .pm { transition: transform .25s ease; }
+  details[open] .pm { transform: rotate(45deg); }
+  dialog.sheet { width: calc(100% - 32px); max-width: 460px; max-height: calc(100dvh - 32px); overflow: auto; padding: 0; color: var(--ink);
+                 background: var(--clip); border: 2px solid var(--ink); box-shadow: 8px 8px 0 var(--red); font-family: var(--fb); }
+  dialog.sheet::backdrop { background: rgba(20,18,16,.62); }
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 2px solid var(--ink); }
+  .tab { min-height: 52px; font-weight: 700; font-size: 16px; background: var(--news); color: var(--ink2); }
+  .tab[aria-selected="true"] { background: var(--clip); color: var(--ink); box-shadow: inset 0 -4px 0 var(--red); }
+  .pw { padding-left: 52px !important; }
+  [dir="ltr"] .pw { padding-left: 14px !important; padding-right: 52px !important; }
+  .eye { position: absolute; inset-block: 0; left: 0; width: 48px; display: grid; place-items: center; color: var(--ink2); }
+  [dir="ltr"] .eye { left: auto; right: 0; }
+  @media (prefers-reduced-motion: reduce) { .track, .clipwrap:hover { animation: none !important; } details .pm { transition: none; } }
+</style>
+</head>
+<body>
+
+<!-- ============ NAV ============ -->
+<header class="relative z-20">
+  <nav class="wrap py-4 flex items-center justify-between gap-3" data-i18n-attr="aria-label:shell.navLabel">
+    <a href="#top" class="logo tilt" style="--r:-3;font-size:28px" data-i18n="brand">خطوة</a>
+    <ul class="hidden lg:flex items-center gap-6 text-[15px] font-medium">
+      <li><a class="hover:text-[color:var(--red)]" href="#features" data-i18n="land.nav.features">المميزات</a></li>
+      <li><a class="hover:text-[color:var(--red)]" href="#how" data-i18n="land.nav.how">كيف يشتغل</a></li>
+      <li><a class="hover:text-[color:var(--red)]" href="#board" data-i18n="land.nav.board">المتصدرين</a></li>
+      <li><a class="hover:text-[color:var(--red)]" href="#faq" data-i18n="land.nav.faq">الأسئلة</a></li>
+    </ul>
+    <div class="flex items-center gap-2 sm:gap-4">
+      <span data-lang-slot></span>
+      <button type="button" data-open="login" class="font-bold text-[15px] min-h-[44px] underline decoration-2 underline-offset-8 hover:text-[color:var(--red)] hidden sm:inline" data-i18n="nav.login">تسجيل الدخول</button>
+      <button type="button" data-open="signup" class="btn btn-sm" data-i18n="nav.start">ابدأ رحلتك</button>
+    </div>
+  </nav>
+</header>
+
+<main id="top">
+
+<!-- ============ 1. HERO (Tilted Grid Hero → crossing news tickers) ============ -->
+<section class="relative overflow-hidden pt-6 pb-20 sm:pb-28" aria-labelledby="hero-title">
+  <div class="strip tilt" style="--r:-7;top:90px;background:var(--ink);color:var(--paper);font-family:var(--f2);font-size:clamp(20px,3vw,30px);padding:8px 0" aria-hidden="true"><span class="track" data-ticker="ticker.a"></span></div>
+  <div class="strip tilt" style="--r:5;bottom:70px;background:var(--red);color:var(--paper);font-family:var(--f3);font-size:clamp(18px,2.6vw,26px);padding:6px 0" aria-hidden="true"><span class="track" data-ticker="ticker.b" style="animation-direction:reverse"></span></div>
+
+  <div class="relative z-10 wrap grid lg:grid-cols-[1fr_auto] gap-12 lg:gap-16 items-center pt-10">
+    <div class="relative p-5 sm:p-8" style="background:var(--paper);box-shadow:0 0 0 2px var(--ink), 8px 8px 0 var(--ink)">
+      <div class="absolute tilt hidden sm:block" style="--r:4;top:-18px;inset-inline-end:24px;font-family:var(--f2);font-size:15px;background:var(--clip);padding:0 10px;box-shadow:1px 2px 0 rgba(0,0,0,.2)"><span data-i18n="hero.issue">العدد</span> <span style="font-family:var(--f3);color:var(--red);font-size:24px" data-num="7" data-pad="2"></span></div>
+      <h1 id="hero-title" class="font-bold leading-[1.45]" style="font-size:clamp(40px,7vw,80px)">
+        <span class="sr-only" data-i18n="hero.sr"></span>
+        <span aria-hidden="true">
+          <span class="chip c-news tilt" style="--r:-2" data-i18n="hero.w1"></span><span class="chip c-ink tilt" style="--r:3" data-i18n="hero.w2"></span><span class="whitespace-nowrap mx-1" data-ransom-i18n="hero.ransom"></span>…<br>
+          <span class="chip c-red tilt" style="--r:-4;font-size:1.1em" data-i18n="hero.w4"></span><span class="chip c-clip tilt" style="--r:2" data-i18n="hero.w5"></span><span class="chip c-redbg tilt" style="--r:-3;font-size:1.1em" data-i18n="hero.w6"></span>
+        </span>
+      </h1>
+      <p class="mt-6 text-lg leading-[1.9] max-w-[38ch] muted" data-i18n="hero.sub"></p>
+      <div class="mt-4 text-base"><span class="strike" data-i18n="hero.strike"></span> <span class="hand text-2xl tilt inline-block" style="--r:-6" data-i18n="hero.today"></span></div>
+      <div class="mt-6 flex flex-wrap items-center gap-x-2 gap-y-4">
+        <button type="button" data-open="signup" class="btn text-lg px-7 py-3"><span data-i18n="nav.start"></span> <svg width="20" height="20" class="flip-x" aria-hidden="true"><use href="#i-go"/></svg></button>
+        <svg width="80" height="44" class="-mt-4 flip-x" style="color:var(--red)" aria-hidden="true"><use href="#i-arrow"/></svg>
+        <span class="hand text-xl tilt -ms-8 mt-6" style="--r:-8" aria-hidden="true" data-i18n="hero.click"></span>
+      </div>
+    </div>
+
+    <!-- app screen as a taped clipping -->
+    <div class="relative mx-auto" style="width:min(300px,100%)">
+      <div class="clipwrap tilt" style="--r:5">
+        <span class="tape" style="top:-10px;inset-inline-start:32%;transform:rotate(-5deg)"></span>
+        <div class="clip torn" role="img" data-i18n-attr="aria-label:hero.screenAria">
+          <div class="flex justify-between items-baseline"><span style="font-family:var(--f3);font-size:22px" data-i18n="app.todayHabits"></span><span class="text-sm"><span data-num="2"></span> / <span data-num="4"></span></span></div>
+          <div class="grid grid-cols-2 gap-3 my-3 text-center">
+            <div style="border:2px solid var(--ink);padding:6px"><div style="font-family:var(--f3);font-size:28px;line-height:1.3" data-num="1240"></div><div class="text-xs" data-i18n="screen.points"></div></div>
+            <div class="relative" style="padding:6px">
+              <svg class="absolute pointer-events-none" style="inset:-10px -12px;width:calc(100% + 24px);height:calc(100% + 20px);color:var(--red)" viewBox="0 0 120 60" preserveAspectRatio="none" aria-hidden="true"><use href="#i-circle"/></svg>
+              <div class="flex gap-1 justify-center items-center" style="font-family:var(--f3);font-size:28px;line-height:1.3"><svg width="20" height="20" style="color:var(--red)" aria-hidden="true"><use href="#i-flame"/></svg><span data-num="12"></span></div><div class="text-xs" data-i18n="app.streakUnit"></div>
+            </div>
+          </div>
+          <div class="row"><span class="done" data-i18n="idea.water"></span><svg width="20" height="20" style="color:var(--red)" aria-hidden="true"><use href="#i-check"/></svg></div>
+          <div class="row"><span class="done" data-i18n="screen.run"></span><svg width="20" height="20" style="color:var(--red)" aria-hidden="true"><use href="#i-check"/></svg></div>
+          <div class="row"><span data-i18n="idea.read"></span><svg width="20" height="20" aria-hidden="true"><use href="#i-box"/></svg></div>
+          <div class="row"><span data-i18n="idea.sleep"></span><svg width="20" height="20" aria-hidden="true"><use href="#i-box"/></svg></div>
+          <div class="mt-3 h-2.5" style="background:var(--news)"><div class="h-full" style="width:50%;background:var(--red)"></div></div>
+          <div class="text-xs mt-1" data-i18n="screen.level"></div>
+        </div>
+      </div>
+      <div class="stamp on-paper tilt absolute" style="--r:-14;width:92px;height:92px;bottom:-30px;inset-inline-end:-30px;font-size:17px" aria-hidden="true"><span><span data-i18n="stamp.approved"></span><br><small style="font-size:12px" data-i18n="stamp.days"></small></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2. QUICK NUMBERS (stamps) ============ -->
+<section class="wrap py-14" aria-labelledby="nums-title">
+  <h2 id="nums-title" class="sr-only" data-i18n="nums.sr"></h2>
+  <div class="grid sm:grid-cols-3 gap-10 sm:gap-6 items-center justify-items-center text-center">
+    <div class="stamp on-paper tilt" style="--r:-8;width:210px;height:210px">
+      <div><div style="font-family:var(--f3);font-size:46px;line-height:1.1" data-i18n="nums.habits"></div><div style="font-size:22px" data-i18n="nums.habitsUnit"></div><div class="text-sm" style="font-family:var(--fb);font-weight:500" data-i18n="nums.habitsNote"></div></div>
+    </div>
+    <div class="tilt p-2" style="--r:3;border:3px dashed var(--ink);background:var(--clip)">
+      <div class="px-8 py-6" style="border:2px solid var(--ink)">
+        <div style="font-family:var(--f2);font-size:20px" data-i18n="nums.stamp"></div>
+        <div style="font-family:var(--f3);font-size:54px;line-height:1.1;color:var(--red)" data-i18n="nums.users"></div>
+        <div class="font-bold" data-i18n="nums.usersNote"></div>
+      </div>
+    </div>
+    <div class="tilt" style="--r:-4;border:4px solid var(--blue);color:var(--blue);padding:16px 26px;box-shadow:inset 0 0 0 3px var(--paper), inset 0 0 0 5px var(--blue)">
+      <div style="font-family:var(--f3);font-size:46px;line-height:1.1" data-i18n="nums.streak"></div>
+      <div class="font-bold" data-i18n="nums.streakNote"></div>
+    </div>
+  </div>
+  <p class="text-center text-sm mt-8 muted" data-i18n="nums.disclaimer"></p>
+</section>
+
+<!-- ============ 3. FEATURES ============ -->
+<section id="features" class="wrap py-16" aria-labelledby="feat-title">
+  <h2 id="feat-title" class="sec-title mb-12">
+    <span class="sr-only" data-i18n="feat.sr"></span>
+    <span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-3" data-i18n="feat.w1"></span><span class="chip c-news tilt" style="--r:2" data-i18n="feat.w2"></span><span class="whitespace-nowrap" data-ransom-i18n="feat.ransom"></span><span class="c-red" style="font-family:var(--f3)" data-i18n="feat.end"></span></span>
+  </h2>
+  <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
+    <article class="clipwrap tilt" style="--r:-2"><span class="tape" style="top:-10px;inset-inline-start:20px;transform:rotate(-6deg)"></span>
+      <div class="clip torn h-full">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5c5-.6 11-.8 16 .3.5 5 .4 10-.2 14.5-5 .6-10 .5-15.3-.2C4 14.5 3.8 9.5 4 5z"/><path d="M8 12.5l3 3 5-6"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f3);font-size:26px" data-i18n="f1.t"></h3>
+        <p class="mt-1 muted" data-i18n="f1.d"></p>
+      </div>
+    </article>
+    <article class="clipwrap tilt" style="--r:2">
+      <div class="clip torn h-full" style="background:var(--ink);color:var(--paper)">
+        <svg width="40" height="40" style="color:var(--yellow)" aria-hidden="true"><use href="#i-star"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f2);font-size:30px" data-i18n="f2.t"></h3>
+        <p class="mt-1" style="color:#E6DCC6" data-i18n="f2.d"></p>
+      </div>
+    </article>
+    <article class="clipwrap tilt" style="--r:-1"><span class="tape" style="top:-10px;inset-inline-end:24px;transform:rotate(8deg)"></span>
+      <div class="clip torn h-full" style="background:var(--news)">
+        <svg width="40" height="40" aria-hidden="true"><use href="#i-users"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f1);font-size:28px;font-weight:700" data-i18n="f3.t"></h3>
+        <p class="mt-1 muted" data-i18n="f3.d"></p>
+      </div>
+    </article>
+    <article class="clipwrap tilt" style="--r:3">
+      <div class="clip torn h-full" style="background:var(--red);color:var(--paper)">
+        <svg width="40" height="40" style="color:var(--paper)" aria-hidden="true"><use href="#i-flame"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f3);font-size:26px" data-i18n="f4.t"></h3>
+        <p class="mt-1" style="color:#FBE9E7" data-i18n="f4.d"></p>
+      </div>
+    </article>
+    <article class="clipwrap tilt" style="--r:-3"><span class="tape" style="top:-10px;inset-inline-start:40%;transform:rotate(3deg)"></span>
+      <div class="clip torn h-full">
+        <svg width="40" height="40" style="color:var(--blue)" aria-hidden="true"><use href="#i-bell"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f2);font-size:30px" data-i18n="f5.t"></h3>
+        <p class="mt-1 muted" data-i18n="f5.d"></p>
+      </div>
+    </article>
+    <article class="clipwrap tilt" style="--r:1">
+      <div class="clip torn h-full" style="box-shadow:inset 0 0 0 2px var(--ink)">
+        <svg width="40" height="40" aria-hidden="true"><use href="#i-chart"/></svg>
+        <h3 class="mt-3" style="font-family:var(--f3);font-size:26px" data-i18n="f6.t"></h3>
+        <p class="mt-1 muted" data-i18n="f6.d"></p>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ============ 4. HOW IT WORKS ============ -->
+<section id="how" class="relative py-20 overflow-hidden" style="background:var(--news)" aria-labelledby="how-title">
+  <div class="wrap">
+    <h2 id="how-title" class="sec-title mb-14">
+      <span class="sr-only" data-i18n="how.sr"></span>
+      <span aria-hidden="true"><span class="chip c-clip tilt" style="--r:2" data-i18n="how.w1"></span><span class="chip c-redbg tilt" style="--r:-3" data-i18n="how.w2"></span></span>
+    </h2>
+    <ol class="grid md:grid-cols-3 gap-12 md:gap-6">
+      <li class="relative">
+        <div class="tilt inline-block" style="--r:-6;font-family:var(--f3);font-size:96px;line-height:1;color:var(--red)" data-num="1"></div>
+        <h3 class="mt-2" style="font-family:var(--f1);font-size:30px;font-weight:700" data-i18n="s1.t"></h3>
+        <p class="muted" data-i18n="s1.d"></p>
+        <svg class="hidden md:block absolute top-6 -end-10 how-arrow" width="80" height="44" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </li>
+      <li class="relative">
+        <div class="tilt inline-block" style="--r:5;font-family:var(--f2);font-size:96px;line-height:1;background:var(--ink);color:var(--paper);padding:0 18px" data-num="2"></div>
+        <h3 class="mt-2" style="font-family:var(--f1);font-size:30px;font-weight:700" data-i18n="s2.t"></h3>
+        <p class="muted" data-i18n="s2.d"></p>
+        <svg class="hidden md:block absolute top-6 -end-10 how-arrow" width="80" height="44" aria-hidden="true"><use href="#i-arrow"/></svg>
+      </li>
+      <li>
+        <div class="tilt inline-block" style="--r:-3;font-family:var(--f1);font-weight:700;font-size:96px;line-height:1;background:var(--clip);padding:0 18px;box-shadow:2px 3px 0 rgba(0,0,0,.25)" data-num="3"></div>
+        <h3 class="mt-2" style="font-family:var(--f1);font-size:30px;font-weight:700" data-i18n="s3.t"></h3>
+        <p class="muted" data-i18n="s3.d"></p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ 5. LEADERBOARD ============ -->
+<section id="board" class="wrap py-20" aria-labelledby="board-title">
+  <div class="grid lg:grid-cols-[1fr_1.3fr] gap-12 items-center">
+    <div>
+      <h2 id="board-title" class="sec-title">
+        <span class="sr-only" data-i18n="board.sr"></span>
+        <span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-2" data-i18n="board.w1"></span><br><span class="chip c-news tilt" style="--r:3" data-i18n="board.w2"></span></span>
+      </h2>
+      <p class="mt-5 text-lg max-w-[34ch] muted" data-i18n="board.desc"></p>
+      <p class="mt-4"><span class="strike" data-i18n="board.strike"></span> <span class="hand text-2xl" data-i18n="board.close"></span></p>
+    </div>
+    <div class="clipwrap tilt" style="--r:-1.5"><span class="tape" style="top:-10px;inset-inline-start:45%;transform:rotate(-3deg)"></span>
+      <div class="clip torn p-5 sm:p-7 overflow-x-auto">
+        <div class="flex items-baseline justify-between flex-wrap gap-2 border-b-4 border-double pb-2" style="border-color:var(--ink)">
+          <span style="font-family:var(--f2);font-size:30px" data-i18n="board.weekly"></span><span class="text-sm" data-i18n="board.weekNo"></span>
+        </div>
+        <table class="datatable num mt-3 text-[15px]" id="sample-board">
+          <caption class="sr-only" data-i18n="board.caption"></caption>
+          <thead><tr><th scope="col" class="w-12">#</th><th scope="col" data-i18n="board.name"></th><th scope="col" data-i18n="board.streak"></th><th scope="col" style="text-align:end" data-i18n="board.points"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6. TESTIMONIALS (newspaper clippings) ============ -->
+<section class="py-20" style="background:var(--ink)" aria-labelledby="quotes-title">
+  <div class="wrap">
+    <h2 id="quotes-title" class="sec-title mb-12" style="color:var(--paper)">
+      <span class="sr-only" data-i18n="q.sr"></span>
+      <span aria-hidden="true"><span class="chip c-clip tilt" style="--r:-2;color:var(--ink)" data-i18n="q.w1"></span><span class="chip c-redbg tilt" style="--r:3" data-i18n="q.w2"></span><span class="whitespace-nowrap" data-ransom-i18n="q.ransom"></span></span>
+    </h2>
+    <div class="grid md:grid-cols-3 gap-10">
+      <figure class="clipwrap tilt" style="--r:-3"><span class="tape" style="top:-10px;inset-inline-start:30%;transform:rotate(-4deg)"></span>
+        <div class="clip torn h-full" style="background:var(--news)">
+          <p style="font-family:var(--f2);font-size:24px;border-bottom:3px double var(--ink)" data-i18n="q1.head"></p>
+          <blockquote class="mt-3" style="font-family:var(--f1);font-size:20px;line-height:1.7" data-i18n="q1.text"></blockquote>
+          <figcaption class="mt-3 text-sm font-bold" data-i18n="q1.by"></figcaption>
+        </div>
+      </figure>
+      <figure class="clipwrap tilt" style="--r:2"><span class="tape" style="top:-10px;inset-inline-end:30%;transform:rotate(5deg)"></span>
+        <div class="clip torn h-full">
+          <p style="font-family:var(--f3);font-size:24px;color:var(--red)" data-i18n="q2.head"></p>
+          <blockquote class="mt-3" style="font-family:var(--f1);font-size:20px;line-height:1.7" data-i18n="q2.text"></blockquote>
+          <figcaption class="mt-3 text-sm font-bold" data-i18n="q2.by"></figcaption>
+        </div>
+      </figure>
+      <figure class="clipwrap tilt" style="--r:-1.5"><span class="tape" style="top:-10px;inset-inline-start:40%;transform:rotate(2deg)"></span>
+        <div class="clip torn h-full" style="background:var(--news)">
+          <p style="font-family:var(--f2);font-size:24px;border-bottom:3px double var(--ink)" data-i18n="q3.head"></p>
+          <blockquote class="mt-3" style="font-family:var(--f1);font-size:20px;line-height:1.7" data-i18n="q3.text"></blockquote>
+          <figcaption class="mt-3 text-sm font-bold" data-i18n="q3.by"></figcaption>
+        </div>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7. FAQ ============ -->
+<section id="faq" class="max-w-3xl mx-auto wrap py-20" aria-labelledby="faq-title">
+  <h2 id="faq-title" class="sec-title mb-10">
+    <span class="sr-only" data-i18n="faq.sr"></span>
+    <span aria-hidden="true"><span class="chip c-news tilt" style="--r:-3" data-i18n="faq.w1"></span><span class="chip c-ink tilt" style="--r:2" data-i18n="faq.w2"></span></span>
+  </h2>
+  <div class="space-y-4" id="faq-list"></div>
+</section>
+
+<!-- ============ 8. FINAL CTA ============ -->
+<section id="start" class="relative overflow-hidden py-24" style="background:var(--red)" aria-labelledby="cta-title">
+  <div class="strip tilt" style="--r:-4;top:18px;color:rgba(239,230,210,.25);font-family:var(--f2);font-size:44px" aria-hidden="true"><span class="track" data-ticker="cta.ticker"></span></div>
+  <div class="relative z-10 max-w-3xl mx-auto wrap text-center">
+    <h2 id="cta-title" class="font-bold leading-[1.5]" style="font-size:clamp(40px,7vw,76px)">
+      <span class="sr-only" data-i18n="cta.sr"></span>
+      <span aria-hidden="true"><span class="chip c-ink tilt" style="--r:-3" data-i18n="cta.w1"></span><span class="chip c-clip tilt" style="--r:2" data-i18n="cta.w2"></span><br><span class="chip c-lal tilt" style="--r:-2;font-family:var(--f3);background:var(--clip)" data-i18n="cta.w3"></span><span class="chip c-ink tilt" style="--r:4;font-family:var(--f1);font-weight:700" data-i18n="cta.w4"></span></span>
+    </h2>
+    <p class="mt-6 text-lg" style="color:var(--on-red)" data-i18n="cta.sub"></p>
+    <button type="button" data-open="signup" class="btn btn-ghost mt-8 text-xl sm:text-2xl px-10 py-5"><span data-i18n="cta.btn"></span> <svg width="28" height="28" class="flip-x" aria-hidden="true"><use href="#i-go"/></svg></button>
+    <p class="mt-4 text-[15px]" style="color:var(--on-red)"><span data-i18n="cta.have"></span> <button type="button" data-open="login" class="font-bold underline underline-offset-4" style="color:#FFFFFF" data-i18n="cta.login"></button></p>
+    <p class="mt-5 text-sm" style="color:var(--on-red)" data-i18n="cta.note"></p>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ 9. FOOTER ============ -->
+<footer class="py-10">
+  <div class="wrap flex flex-col sm:flex-row items-center justify-between gap-5 text-sm">
+    <a href="#top" class="logo tilt" style="--r:-3;font-size:24px" data-i18n="brand"></a>
+    <ul class="flex flex-wrap justify-center gap-5">
+      <li><a class="hover:underline" href="#features" data-i18n="land.nav.features"></a></li>
+      <li><a class="hover:underline" href="#faq" data-i18n="land.nav.faq"></a></li>
+      <li><a class="hover:underline" href="privacy.html" data-i18n="footer.privacy"></a></li>
+      <li><a class="hover:underline" href="contact.html" data-i18n="footer.contact"></a></li>
+    </ul>
+    <p class="muted" data-i18n="footer.rights"></p>
+  </div>
+</footer>
+
+<!-- ============ LOGIN / SIGN-UP ============ -->
+<dialog id="auth" class="sheet" aria-labelledby="auth-title">
+  <div class="flex items-center justify-between px-5 pt-4">
+    <h2 id="auth-title" style="font-family:var(--f3);font-size:28px" data-i18n="auth.title"></h2>
+    <button type="button" data-close class="w-11 h-11 grid place-items-center" data-i18n-attr="aria-label:auth.close"><svg width="22" height="22" class="rotate-45" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  </div>
+  <div class="tabs mt-3" role="tablist">
+    <button type="button" class="tab" role="tab" id="tab-login" aria-controls="form-login" data-tab="login" data-i18n="auth.tabLogin"></button>
+    <button type="button" class="tab" role="tab" id="tab-signup" aria-controls="form-signup" data-tab="signup" data-i18n="auth.tabSignup"></button>
+  </div>
+
+  <form id="form-login" class="p-5 grid gap-4" role="tabpanel" aria-labelledby="tab-login" novalidate>
+    <div class="field">
+      <label for="login-email" data-i18n="auth.email"></label>
+      <input id="login-email" name="email" type="email" inputmode="email" autocomplete="username" dir="ltr" aria-describedby="login-email-err">
+      <p id="login-email-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="login-pass" data-i18n="auth.password"></label>
+      <div class="relative">
+        <input id="login-pass" name="password" type="password" autocomplete="current-password" dir="ltr" class="pw" aria-describedby="login-pass-err">
+        <button type="button" class="eye" data-eye="login-pass" aria-pressed="false" data-i18n-attr="aria-label:auth.show"><svg width="22" height="22" aria-hidden="true"><use href="#i-eye"/></svg></button>
+      </div>
+      <p id="login-pass-err" class="err" aria-live="polite"></p>
+    </div>
+    <p id="login-msg" class="err" role="alert"></p>
+    <button type="submit" class="btn text-lg w-full" data-i18n="auth.enter"></button>
+    <button type="button" data-forgot class="text-sm underline underline-offset-4 justify-self-start muted" data-i18n="auth.forgot"></button>
+    <p id="forgot-msg" class="text-sm muted" role="status"></p>
+  </form>
+
+  <form id="form-signup" class="p-5 grid gap-4" role="tabpanel" aria-labelledby="tab-signup" novalidate hidden>
+    <div class="field">
+      <label for="su-name" data-i18n="auth.name"></label>
+      <input id="su-name" name="name" type="text" dir="auto" autocomplete="nickname" maxlength="30" aria-describedby="su-name-hint su-name-err">
+      <p id="su-name-hint" class="text-sm mt-1 muted" data-i18n="auth.nameHint"></p>
+      <p id="su-name-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="su-email" data-i18n="auth.email"></label>
+      <input id="su-email" name="email" type="email" inputmode="email" autocomplete="email" dir="ltr" aria-describedby="su-email-err">
+      <p id="su-email-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <label for="su-pass" data-i18n="auth.password"></label>
+      <div class="relative">
+        <input id="su-pass" name="password" type="password" autocomplete="new-password" dir="ltr" class="pw" aria-describedby="su-pass-hint su-pass-err">
+        <button type="button" class="eye" data-eye="su-pass" aria-pressed="false" data-i18n-attr="aria-label:auth.show"><svg width="22" height="22" aria-hidden="true"><use href="#i-eye"/></svg></button>
+      </div>
+      <p id="su-pass-hint" class="text-sm mt-1 muted" data-i18n="auth.passHint"></p>
+      <p id="su-pass-err" class="err" aria-live="polite"></p>
+    </div>
+    <div class="field">
+      <div class="flex items-start gap-3">
+        <input id="su-consent" name="consent" type="checkbox" class="mt-1.5 w-5 h-5 shrink-0" style="accent-color:var(--red)" aria-describedby="su-consent-err">
+        <label for="su-consent" style="font-weight:500"><span data-i18n="auth.consentA"></span> <a href="privacy.html" target="_blank" rel="noopener" class="underline underline-offset-4 font-bold" style="color:var(--red)" data-i18n="auth.consentLink"></a> <span data-i18n="auth.consentB"></span></label>
+      </div>
+      <p id="su-consent-err" class="err" aria-live="polite"></p>
+    </div>
+    <p id="su-msg" class="err" role="alert"></p>
+    <button type="submit" class="btn text-lg w-full" data-i18n="auth.create"></button>
+  </form>
+
+  <form id="form-reset" class="p-5 grid gap-4" novalidate hidden>
+    <h3 class="h-sec" data-i18n="auth.newPassTitle"></h3>
+    <div class="field">
+      <label for="rp-pass" data-i18n="auth.newPass"></label>
+      <input id="rp-pass" name="password" type="password" autocomplete="new-password" dir="ltr" aria-describedby="rp-pass-err">
+      <p id="rp-pass-err" class="err" aria-live="polite"></p>
+    </div>
+    <button type="submit" class="btn text-lg w-full" data-i18n="auth.setPass"></button>
+  </form>
+
+  <p id="signup-done" class="mx-5 mb-4 p-3 font-bold" style="background:var(--yellow);color:var(--ink)" role="status" hidden data-i18n="auth.checkEmail"></p>
+
+  <p class="px-5 pb-5 text-sm flex items-start gap-2 muted">
+    <svg width="18" height="18" class="shrink-0 mt-1" aria-hidden="true"><use href="#i-lock"/></svg>
+    <span><span data-i18n="auth.privacyLine"></span> <a href="privacy.html" target="_blank" rel="noopener" class="underline underline-offset-4" data-i18n="auth.readPolicy"></a></span>
+  </p>
+</dialog>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.0/dist/umd/supabase.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/store.js"></script>
+<script src="assets/ui.js"></script>
+<script>
+(function () {
+  const I = KhutwaI18n, { t, num, esc, ransomize, icon } = KhutwaUI;
+  I.apply();
+  KhutwaUI.injectSprite();
+  document.querySelector('[data-lang-slot]').outerHTML = KhutwaUI.langButton('btn btn-ghost btn-sm');
+
+  /* sample leaderboard (illustrative) */
+  const rows = [['n.reem', 28, 2100, true], ['common.you', 12, 1240], ['n.fahad', 9, 980], ['n.noura', 7, 870], ['n.abdullah', 3, 540]];
+  document.querySelector('#sample-board tbody').innerHTML = rows.map(([k, streak, pts, crown], i) => `
+    <tr style="${k === 'common.you' ? 'background:rgba(200,32,28,.08)' : ''}">
+      <td class="py-3"><span style="font-family:var(--f3);font-size:22px;color:${i === 0 ? 'var(--red)' : 'var(--ink)'}">${num(i + 1)}</span></td>
+      <td class="font-bold">${t(k)} ${crown ? `<span style="color:var(--yellow)" class="inline-block align-middle">${icon('crown', 18)}</span><span class="sr-only">(${t('group.leader')})</span>` : ''}${k === 'common.you' ? ` <span class="hand text-sm">${t('board.gap')}</span>` : ''}</td>
+      <td>${I.plural('days', streak)}</td>
+      <td style="text-align:end;font-family:var(--f3);font-size:20px">${num(pts)}</td>
+    </tr>`).join('');
+
+  /* FAQ */
+  document.getElementById('faq-list').innerHTML = [1, 2, 3, 4].map(n => `
+    <details style="background:var(--clip);border:2px solid var(--ink);box-shadow:4px 4px 0 var(--ink)">
+      <summary class="flex items-center justify-between gap-4 p-5 text-lg font-bold">${t('faq' + n + '.q')}<svg class="pm shrink-0" width="24" height="24" style="color:var(--red)" aria-hidden="true"><use href="#i-plus"/></svg></summary>
+      <p class="px-5 pb-5 muted">${t('faq' + n + '.a')}</p>
+    </details>`).join('');
+
+  ransomize();
+})();
+
+/* Login, sign-up and password reset through Supabase Auth. Passwords go straight to Supabase and are wiped from the page. */
+(function () {
+  const t = KhutwaI18n.t;
+  const auth = document.getElementById('auth');
+  const S = KhutwaStore;
+  const forms = { login: document.getElementById('form-login'), signup: document.getElementById('form-signup'), reset: document.getElementById('form-reset') };
+  const tabBar = auth.querySelector('.tabs'), signupDone = document.getElementById('signup-done');
+  const tabs = auth.querySelectorAll('[data-tab]');
+
+  function show(mode) {
+    tabs.forEach(tb => tb.setAttribute('aria-selected', String(tb.dataset.tab === mode)));
+    for (const k in forms) forms[k].hidden = k !== mode;
+    tabBar.hidden = mode === 'reset';
+    signupDone.hidden = true;
+    forms[mode].querySelector('input')?.focus();
+  }
+  function clearErrors(form) {
+    form.querySelectorAll('.err').forEach(e => (e.textContent = ''));
+    document.getElementById('forgot-msg').textContent = '';
+    form.querySelectorAll('[aria-invalid]').forEach(i => i.removeAttribute('aria-invalid'));
+  }
+  function fail(input, msg) {
+    input.setAttribute('aria-invalid', 'true');
+    document.getElementById(input.id + '-err').textContent = msg;
+  }
+  const emailOk = v => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v.trim());
+
+  function open(mode) {
+    Object.values(forms).forEach(f => { f.reset(); clearErrors(f); });
+    if (!auth.open) auth.showModal();
+    show(mode);
+  }
+  document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => open(b.dataset.open)));
+  tabs.forEach(tb => tb.addEventListener('click', () => show(tb.dataset.tab)));
+  document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => b.closest('dialog').close()));
+  auth.addEventListener('click', e => { if (e.target === auth) auth.close(); });
+
+  // Signed in already: login/start buttons lead to the dashboard. Signed out and sent here: open the login.
+  S.session().catch(() => null).then(me => {
+    if (me) {
+      document.querySelectorAll('[data-open]').forEach(b => {
+        const a = document.createElement('a'); a.href = 'app.html'; a.className = b.className;
+        a.innerHTML = b.dataset.open === 'login' ? t('nav.dashboard') : b.innerHTML; b.replaceWith(a);
+      });
+    } else if (location.hash === '#login') open('login');
+  });
+
+  document.querySelectorAll('[data-eye]').forEach(b => b.addEventListener('click', () => {
+    const input = document.getElementById(b.dataset.eye);
+    const showing = input.type === 'text';
+    input.type = showing ? 'password' : 'text';
+    b.setAttribute('aria-pressed', String(!showing));
+    b.setAttribute('aria-label', t(showing ? 'auth.show' : 'auth.hide'));
+  }));
+
+  const ERR = { invalid: 'err.invalid', unconfirmed: 'err.unconfirmed', exists: 'err.exists', weak: 'err.weak', network: 'err.network' };
+  const errText = e => t(ERR[e.message] || 'err.generic');
+  async function busy(form, fn) {
+    const btn = form.querySelector('[type="submit"]'); btn.disabled = true;
+    try { await fn(); } finally { btn.disabled = false; }
+  }
+
+  // Forgot password: send a reset link to the email typed above.
+  auth.querySelector('[data-forgot]').addEventListener('click', async () => {
+    const email = forms.login.elements.email, msg = document.getElementById('forgot-msg');
+    if (!emailOk(email.value)) { msg.textContent = t('auth.forgotMsg'); return email.focus(); }
+    try { await S.resetPassword(email.value); msg.textContent = t('auth.resetSent'); }
+    catch (e) { msg.textContent = errText(e); }
+  });
+  // Coming back from the reset email: ask for the new password.
+  S.onRecovery(() => open('reset'));
+  forms.reset.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = forms.reset; clearErrors(f);
+    const pass = f.elements.password;
+    if (pass.value.length < 8) { fail(pass, t('err.pass8')); return pass.focus(); }
+    busy(f, async () => {
+      try { await S.updatePassword(pass.value); f.reset(); location.href = 'app.html'; }
+      catch (err) { fail(pass, errText(err)); }
+    });
+  });
+
+  forms.login.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = forms.login; clearErrors(f);
+    const email = f.elements.email, pass = f.elements.password;
+    let bad = null;
+    if (!emailOk(email.value)) { fail(email, t('err.email')); bad = bad || email; }
+    if (!pass.value) { fail(pass, t('err.password')); bad = bad || pass; }
+    if (bad) return bad.focus();
+    busy(f, async () => {
+      try { await S.signIn({ email: email.value, password: pass.value }); f.reset(); location.href = 'app.html'; }
+      catch (err) { pass.value = ''; document.getElementById('login-msg').textContent = errText(err); }
+    });
+  });
+
+  forms.signup.addEventListener('submit', e => {
+    e.preventDefault();
+    const f = forms.signup; clearErrors(f);
+    const { name, email, password, consent } = f.elements;
+    let bad = null;
+    if (!name.value.trim()) { fail(name, t('err.name')); bad = bad || name; }
+    if (!emailOk(email.value)) { fail(email, t('err.email')); bad = bad || email; }
+    if (password.value.length < 8) { fail(password, t('err.pass8')); bad = bad || password; }
+    if (!consent.checked) { fail(consent, t('err.consent')); bad = bad || consent; }
+    if (bad) return bad.focus();
+    busy(f, async () => {
+      try {
+        const r = await S.signUp({ email: email.value, password: password.value, name: name.value });
+        f.reset();
+        if (r.confirm) { f.hidden = true; tabBar.hidden = true; signupDone.hidden = false; }   // must confirm the email first
+        else location.href = 'app.html';
+      } catch (err) { password.value = ''; document.getElementById('su-msg').textContent = errText(err); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

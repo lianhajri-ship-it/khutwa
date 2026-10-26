@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>خطوة — خيارات الدادا</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Blaka&family=IBM+Plex+Sans+Arabic:wght@400;500;700&family=Lalezar&family=Marhey:wght@500;700&family=Rakkas&family=Readex+Pro:wght@400;500;700&family=Reem+Kufi:wght@500;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Tajawal', sans-serif; background: #E9E5DC; color: #18181B; }
+
+  /* ===== Variant tokens ===== */
+  .v-a { --paper:#EFE6D2; --clip:#F8F2E4; --news:#E2D6BA; --ink:#141210; --red:#C8201C; --blue:#1B3FA0; --yellow:#E9C46A; --pink:#C8201C;
+         --f1:'Amiri',serif; --f2:'Blaka',serif; --f3:'Lalezar',sans-serif; --fb:'IBM Plex Sans Arabic',sans-serif; }
+  .v-b { --paper:#FFF3D1; --clip:#FFFFFF; --news:#FFE14D; --ink:#111111; --red:#F0302A; --blue:#1F4BFF; --yellow:#FFD400; --pink:#FF4FA3;
+         --f1:'Rakkas',serif; --f2:'Marhey',sans-serif; --f3:'Lalezar',sans-serif; --fb:'Tajawal',sans-serif; }
+  .v-c { --paper:#F5F0E6; --clip:#FBF8F1; --news:#ECE4D3; --ink:#1A1A1A; --red:#B3261E; --blue:#2747B8; --yellow:#E8D9A8; --pink:#B3261E;
+         --f1:'Aref Ruqaa',serif; --f2:'Reem Kufi',sans-serif; --f3:'Reem Kufi',sans-serif; --fb:'Readex Pro',sans-serif; }
+
+  /* ===== Dada canvas ===== */
+  .dd { --tilt: 1; position: relative; overflow: hidden; background: var(--paper); color: var(--ink); font-family: var(--fb); isolation: isolate; }
+  .v-b.dd { background-color: var(--paper); background-image: radial-gradient(rgba(31,75,255,.18) 1.4px, transparent 1.6px); background-size: 12px 12px; }
+  .dd::after { /* paper grain */
+    content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 30; opacity: .45; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .28  0 0 0 0 .2  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  @media (max-width: 640px) { .dd { --tilt: .35; } }   /* chaos calms down on phones */
+
+  .tilt { transform: rotate(calc(var(--r, 0) * 1deg * var(--tilt))); }
+  .chip { display: inline-block; padding: .02em .22em .08em; margin: .04em .06em; line-height: 1.15; box-shadow: 1px 2px 0 rgba(0,0,0,.22); }
+  .ltr { display: inline-block; padding: 0 .08em; margin: 0 .02em; line-height: 1.2; box-shadow: 1px 1px 0 rgba(0,0,0,.25); }
+  .headline { font-size: clamp(30px, 4.2vw, 46px); }
+
+  .sub { font-family: var(--fb); font-size: 14.5px; line-height: 1.9; color: var(--ink); background: var(--clip); padding: 8px 12px; max-width: 34ch; }
+  .btn-dd { font-family: var(--fb); font-weight: 700; font-size: 15px; background: var(--ink); color: var(--paper); border: 2px solid var(--ink);
+            padding: 11px 22px; box-shadow: 4px 4px 0 var(--red); display: inline-flex; align-items: center; gap: 8px; transition: transform .2s ease, box-shadow .2s ease; cursor: pointer; }
+  .btn-dd:hover { transform: translate(-2px,-2px) rotate(-1.5deg); box-shadow: 6px 6px 0 var(--red); }
+  .btn-dd:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+
+  .clipwrap { position: relative; filter: drop-shadow(3px 5px 0 rgba(0,0,0,.2)); transition: transform .25s ease; }
+  .clipwrap:hover { animation: jitter .35s ease-in-out; }
+  .torn { clip-path: polygon(0 2%,6% 0,12% 2.5%,19% .5%,26% 2%,33% 0,41% 2.2%,48% .4%,56% 2%,63% 0,71% 2.4%,78% .6%,86% 2%,93% 0,100% 1.8%,
+                             100% 98%,94% 100%,87% 97.6%,80% 99.6%,72% 97.8%,65% 100%,57% 98%,50% 99.7%,42% 97.6%,35% 99.8%,27% 98%,20% 100%,12% 97.7%,6% 99.5%,0 98%); }
+  .clip { background: var(--clip); padding: 16px 12px 14px; font-family: var(--fb); color: var(--ink); }
+  .tape { position: absolute; width: 64px; height: 20px; background: rgba(233,215,150,.75); z-index: 2; box-shadow: 0 1px 0 rgba(0,0,0,.08); }
+  .v-b .tape { background: rgba(255,79,163,.55); }
+
+  .stamp { width: 78px; height: 78px; border-radius: 50%; border: 3px solid var(--red); color: var(--red); display: grid; place-items: center; text-align: center;
+           box-shadow: inset 0 0 0 4px var(--paper), inset 0 0 0 5.5px var(--red); font-family: var(--f1); font-weight: 700; line-height: 1.05; font-size: 15px; opacity: .88; }
+  .postage { padding: 6px 8px; background: var(--clip); border: 2px dashed var(--ink); font-family: var(--f3); text-align: center; }
+  .strike { position: relative; display: inline-block; }
+  .strike::after { content: ""; position: absolute; inset: 50% -4px auto; height: 3px; background: var(--red); transform: rotate(-6deg); border-radius: 2px; }
+  .hand { font-family: var(--f1); color: var(--red); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; padding: 5px 0; border-bottom: 1px dashed rgba(0,0,0,.25); }
+  .row:last-child { border-bottom: 0; }
+
+  .strip { position: absolute; inset-inline: -20%; white-space: nowrap; overflow: hidden; z-index: 1; }
+  .track { display: inline-block; animation: marquee 22s linear infinite; }
+  @keyframes marquee { to { transform: translateX(50%); } }
+  @keyframes jitter { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+  @media (prefers-reduced-motion: reduce) { .track, .clipwrap:hover { animation: none; } .btn-dd, .clipwrap { transition: none; } }
+
+  .sw { width: 34px; height: 34px; border: 1px solid rgba(0,0,0,.15); }
+</style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+
+  <header class="mb-10">
+    <p class="text-sm font-bold text-red-700">صفحة هبوط «خطوة» · المرحلة الأولى · ستايل الدادا</p>
+    <h1 class="text-3xl sm:text-4xl font-extrabold mt-2">اختر التنويعة والهيرو</h1>
+    <p class="text-zinc-700 mt-3 max-w-3xl leading-relaxed">الأساس هو ستايل <b dir="ltr">Gen Z Chaos / Maximalism</b> من مهارة ui-ux-pro-max (كولاج، ملصقات، فوضى مقصودة، اهتزاز)، ومطبّق عليه روح الدادا. الفوضى في العناوين والزخرفة بس، والنصوص والأزرار تظل واضحة. صغّر النافذة وبتشوف الميلان يخف على الجوال.</p>
+  </header>
+
+  <section aria-labelledby="var-h">
+    <h2 id="var-h" class="text-2xl font-extrabold mb-5">القسم الأول: تنويعات الدادا</h2>
+    <div id="variants" class="space-y-8"></div>
+  </section>
+
+  <section aria-labelledby="hero-h" class="mt-16">
+    <h2 id="hero-h" class="text-2xl font-extrabold mb-1">القسم الثاني: تصاميم الهيرو من 21st.dev، بنسخة دادا</h2>
+    <p class="text-zinc-700 mb-5 text-sm">معروضة بتنويعة (أ) عشان تقارن التخطيط نفسه. التنويعة اللي تختارها تنطبق على الهيرو.</p>
+    <div id="heroes" class="space-y-8"></div>
+  </section>
+
+  <footer class="mt-16 bg-zinc-900 text-white p-6 sm:p-8" style="box-shadow:6px 6px 0 #C8201C">
+    <h2 class="text-xl font-extrabold">وش اختيارك؟</h2>
+    <p class="text-zinc-300 mt-2 leading-relaxed">أرسل حرف التنويعة (أ / ب / ج) ورقم الهيرو (١ / ٢ / ٣)، مثلًا: <b class="text-white">«تنويعة أ + هيرو ٢»</b>. وتقدر تخلط، مثل ألوان تنويعة مع خطوط تنويعة ثانية.</p>
+  </footer>
+</main>
+
+<script>
+/* ---------- icons (SVG, hand-drawn feel) ---------- */
+const I = {
+  check: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13c2 1.5 3.5 3.5 5 6 3-7 6.5-11 11-14"/></svg>',
+  box: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" stroke-width="2" aria-hidden="true"><path d="M4 5c5-.6 11-.8 16 .3.5 5 .4 10-.2 14.5-5 .6-10 .5-15.3-.2C4 14.5 3.8 9.5 4 5z"/></svg>',
+  flame: '<svg width="16" height="16" viewBox="0 0 24 24" fill="var(--red)" aria-hidden="true"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 11 11c0-4 1-9 1-9z"/></svg>',
+  arrow: '<svg width="80" height="44" viewBox="0 0 80 44" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 34C18 8 46 4 70 20"/><path d="M57 16l14 5-6 12"/></svg>',
+  circle: '<svg viewBox="0 0 120 60" fill="none" stroke="var(--red)" stroke-width="3" stroke-linecap="round" aria-hidden="true" preserveAspectRatio="none" style="position:absolute;inset:-10px -12px;width:calc(100% + 24px);height:calc(100% + 20px);pointer-events:none"><path d="M14 34C10 12 104 4 112 26 118 48 26 58 10 40 4 30 22 14 44 10"/></svg>',
+  go: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>',
+};
+
+/* ---------- ransom letters: split an Arabic word into clippings while keeping joined letter forms (ZWJ) ---------- */
+const NON_LEFT = 'اأإآدذرزوؤةىء';
+const isAr = c => /[ء-ي]/.test(c);
+function ransom(word, styles) {
+  const L = [...word];
+  return L.map((ch, i) => {
+    const before = i > 0 && isAr(ch) && isAr(L[i-1]) && !NON_LEFT.includes(L[i-1]) ? '‍' : '';
+    const after = i < L.length-1 && isAr(ch) && isAr(L[i+1]) && !NON_LEFT.includes(ch) ? '‍' : '';
+    const s = styles[i % styles.length];
+    return `<span class="ltr tilt" style="--r:${s.r};font-family:${s.f};background:${s.bg};color:${s.c};font-size:${s.s||1.15}em">${before}${ch}${after}</span>`;
+  }).join('');
+}
+function chip(t, s) { return `<span class="chip tilt" style="--r:${s.r};font-family:${s.f};background:${s.bg};color:${s.c};font-size:${s.s||1}em">${t}</span>`; }
+
+/* ---------- per-variant headline treatments ---------- */
+const V = {
+  a: { cls: 'v-a', level: 2,
+    words: [
+      { f:'var(--f1)', bg:'var(--news)', c:'var(--ink)', r:-2 },
+      { f:'var(--f2)', bg:'var(--ink)', c:'var(--paper)', r:3, s:1.05 },
+      null,
+      { f:'var(--f3)', bg:'transparent', c:'var(--red)', r:-4, s:1.1 },
+      { f:'var(--f1)', bg:'var(--clip)', c:'var(--ink)', r:2 },
+      { f:'var(--f2)', bg:'var(--red)', c:'var(--paper)', r:-3, s:1.15 } ],
+    letters: [
+      { f:'var(--f3)', bg:'var(--ink)', c:'var(--paper)', r:-6 },
+      { f:'var(--f1)', bg:'var(--news)', c:'var(--red)', r:5, s:1.3 },
+      { f:'var(--f2)', bg:'var(--clip)', c:'var(--ink)', r:-3 },
+      { f:'var(--f3)', bg:'var(--red)', c:'var(--paper)', r:7, s:1.25 } ] },
+  b: { cls: 'v-b', level: 3,
+    words: [
+      { f:'var(--f3)', bg:'var(--yellow)', c:'var(--ink)', r:-4 },
+      { f:'var(--f1)', bg:'var(--blue)', c:'#fff', r:3, s:1.05 },
+      null,
+      { f:'var(--f2)', bg:'var(--pink)', c:'var(--ink)', r:-5 },
+      { f:'var(--f3)', bg:'var(--clip)', c:'var(--blue)', r:4, s:1.1 },
+      { f:'var(--f1)', bg:'var(--red)', c:'#fff', r:-3, s:1.2 } ],
+    letters: [
+      { f:'var(--f3)', bg:'var(--red)', c:'#fff', r:-8 },
+      { f:'var(--f2)', bg:'var(--yellow)', c:'var(--ink)', r:6, s:1.35 },
+      { f:'var(--f1)', bg:'var(--blue)', c:'#fff', r:-4 },
+      { f:'var(--f3)', bg:'var(--pink)', c:'var(--ink)', r:9, s:1.3 } ] },
+  c: { cls: 'v-c', level: 1,
+    words: [
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:0 },
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:0 },
+      null,
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:-2 },
+      { f:'var(--f1)', bg:'transparent', c:'var(--red)', r:3, s:1.15 },
+      { f:'var(--f2)', bg:'var(--ink)', c:'var(--paper)', r:-2 } ],
+    letters: [
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:0, s:1.1 },
+      { f:'var(--f1)', bg:'var(--clip)', c:'var(--red)', r:6, s:1.3 },
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:-3, s:1.1 },
+      { f:'var(--f2)', bg:'transparent', c:'var(--ink)', r:0, s:1.1 } ] },
+};
+
+function headline(v, center) {
+  const w = V[v].words;
+  return `<h3 class="headline font-bold leading-[1.5] ${center ? 'text-center' : ''}">
+    ${chip('كل', w[0])}${chip('يوم', w[1])}<span style="white-space:nowrap;margin-inline:.1em">${ransom('خطوة', V[v].letters)}</span>…<br>
+    ${chip('وكل', w[3])}${chip('خطوة', w[4])}${chip('تفرق', w[5])}
+  </h3>`;
+}
+const subText = 'حوّل الرياضة والقراءة وشرب الماء والنوم بدري إلى لعبة يومية: نقاط، تحديات مع أصحابك، وسلسلة أيام ما تبي تقطعها.';
+function cta(v) {
+  return `<div class="flex items-center gap-1 flex-wrap mt-4">
+    <a href="#" class="btn-dd">ابدأ رحلتك ${I.go}</a>
+    <span class="flex flex-col items-center -mt-3">${I.arrow}</span>
+    <span class="hand text-lg -mr-6 mt-6 tilt" style="--r:-8">اضغط هنا!</span>
+  </div>`;
+}
+
+/* app screen as a torn clipping */
+function screen(r = -4, w = 230) {
+  const habits = [['شرب ٨ أكواب ماء',1],['٣٠ دقيقة رياضة',1],['قراءة ٢٠ صفحة',0],['النوم قبل ١١',0]];
+  return `<div class="clipwrap tilt" style="--r:${r};width:${w}px;max-width:100%">
+    <span class="tape" style="top:-8px;right:30%;transform:rotate(-4deg)"></span>
+    <div class="clip torn">
+      <div class="flex justify-between items-baseline" style="font-family:var(--f3);font-size:15px"><span>عادات اليوم</span><span style="font-size:12px;font-family:var(--fb)">٢ / ٤</span></div>
+      <div class="grid grid-cols-2 gap-2 my-2 text-center">
+        <div style="border:2px solid var(--ink);padding:4px"><div style="font-family:var(--f3);font-size:20px">١٢٤٠</div><div style="font-size:11px">نقطة</div></div>
+        <div style="position:relative;padding:4px">${I.circle}<div style="font-family:var(--f3);font-size:20px;display:flex;gap:3px;justify-content:center;align-items:center">${I.flame}١٢</div><div style="font-size:11px">يوم متتالي</div></div>
+      </div>
+      ${habits.map(([t,on]) => `<div class="row"><span ${on ? 'style="text-decoration:line-through;text-decoration-color:var(--red);text-decoration-thickness:2px"' : ''}>${t}</span>${on ? I.check : I.box}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function decor(v) {
+  const lvl = V[v].level;
+  let d = `<div class="stamp tilt absolute" style="--r:-14;bottom:18px;left:18px;z-index:5">مُعتمد<br><small style="font-size:11px">١٢ يوم</small></div>`;
+  if (lvl >= 2) d += `
+    <div class="absolute tilt" style="--r:4;top:14px;left:22px;font-family:var(--f2);font-size:13px;z-index:5">العدد <span style="font-family:var(--f3);color:var(--red);font-size:22px">٠٧</span></div>
+    <div class="absolute tilt" style="--r:-3;top:62px;left:120px;z-index:5;font-size:13px"><span class="strike">بكرة أبدأ</span> <span class="hand text-lg">اليوم!</span></div>`;
+  if (lvl >= 3) d += `
+    <div class="absolute tilt grid place-items-center" style="--r:12;top:150px;left:-16px;width:96px;height:96px;z-index:5;background:var(--yellow);clip-path:polygon(50% 0,61% 22%,85% 12%,78% 38%,100% 50%,78% 62%,85% 88%,61% 78%,50% 100%,39% 78%,15% 88%,22% 62%,0 50%,22% 38%,15% 12%,39% 22%);font-family:var(--f3);font-size:15px;text-align:center;line-height:1.1">+٥٠<br>نقطة!</div>
+    <div class="absolute" style="bottom:-20px;right:-30px;width:150px;height:150px;border-radius:50%;background:var(--blue);opacity:.9;z-index:0"></div>
+    <div class="absolute tilt" style="--r:20;top:-10px;right:44%;width:70px;height:26px;background:var(--pink);z-index:0"></div>`;
+  return d;
+}
+
+function nav(v) {
+  return `<nav class="flex justify-between items-center mb-6 relative z-10">
+    <span class="tilt" style="--r:-3;font-family:var(--f3);font-size:22px;background:var(--ink);color:var(--paper);padding:0 10px">خطوة</span>
+    <span style="font-family:var(--fb);font-size:12.5px">المميزات · المتصدرين · الأسئلة</span>
+  </nav>`;
+}
+
+/* ---------- variant previews ---------- */
+function variantPreview(v) {
+  return `<div class="dd ${V[v].cls} p-5 sm:p-7" style="min-height:420px">
+    ${nav(v)}
+    <div class="relative z-10 flex flex-wrap items-center gap-8 justify-between">
+      <div class="flex-1" style="min-width:260px">
+        ${headline(v)}
+        <p class="sub mt-4">${subText}</p>
+        ${cta(v)}
+      </div>
+      <div class="mx-auto sm:mx-0 sm:ml-10">${screen(-5)}</div>
+    </div>
+    ${decor(v)}
+  </div>`;
+}
+
+const variants = [
+  { k:'a', n:'أ', name:'كولاج جرايد كلاسيكي', sub:'أسود وأحمر على ورق جرايد قديم',
+    colors:['#EFE6D2','#E2D6BA','#141210','#C8201C','#1B3FA0'],
+    fonts:[['Blaka','عناوين قوطية مثل ترويسة الجريدة'],['Amiri','قصاصات نسخ كلاسيكية'],['Lalezar','كلمات عريضة'],['IBM Plex Sans Arabic','النصوص والأزرار']],
+    why:'الأقرب لملصقات الدادا الأصلية في عشرينات القرن الماضي: قصاصات جرايد وختم أحمر وخط مشطوب. جريء وساخر بس ألوانه محدودة، فيبان مرتّب وسط الفوضى.' },
+  { k:'b', n:'ب', name:'دادا بوب صاخب', sub:'ألوان صارخة ونقاط طباعة',
+    colors:['#FFF3D1','#FFD400','#F0302A','#1F4BFF','#FF4FA3','#111111'],
+    fonts:[['Lalezar','كلمات عريضة'],['Rakkas','عناوين بارزة'],['Marhey','حروف مرحة'],['Tajawal','النصوص والأزرار']],
+    why:'الأقرب لروح Gen Z Chaos: أصفر وأزرق وأحمر صارخة، ملصقات نجمة، نقاط هالفتون، وأشكال ملوّنة ورا القصاصات. أكثرها طاقة ومرح، ويحتاج ضبط عشان ما يزحم.' },
+  { k:'c', n:'ج', name:'دادا هادئ', sub:'مساحات فاضية وعناصر قليلة مبعثرة',
+    colors:['#F5F0E6','#FBF8F1','#1A1A1A','#B3261E','#2747B8'],
+    fonts:[['Reem Kufi','عناوين كوفية نظيفة'],['Aref Ruqaa','كلمة بخط رقعة أحمر'],['Readex Pro','النصوص والأزرار']],
+    why:'فوضى محسوبة: مساحات بيضاء كثيرة، وحرف أو كلمة وحدة مايلة، وختم وسهم بس. يحس فني ومثل المعارض، والأسهل في القراءة، بس أقل صخب.' },
+];
+
+document.getElementById('variants').innerHTML = variants.map(x => `
+  <article class="bg-white border-2 border-zinc-900 grid lg:grid-cols-[1fr_300px]" style="box-shadow:6px 6px 0 #141210">
+    ${variantPreview(x.k)}
+    <div class="p-5 flex flex-col gap-4 border-t-2 lg:border-t-0 lg:border-r-2 border-zinc-900">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 bg-zinc-900 text-white grid place-items-center font-extrabold text-xl">${x.n}</span>
+        <div><h3 class="font-extrabold text-lg leading-tight">${x.name}</h3><p class="text-xs text-zinc-600">${x.sub}</p></div>
+      </div>
+      <div><p class="text-sm font-bold mb-2">الألوان</p><div class="flex flex-wrap gap-2">
+        ${x.colors.map(c => `<div class="text-center"><div class="sw" style="background:${c}"></div><div class="text-[10px] text-zinc-600 mt-1" dir="ltr">${c}</div></div>`).join('')}
+      </div></div>
+      <div><p class="text-sm font-bold mb-1">الخطوط</p><ul class="text-sm space-y-1">
+        ${x.fonts.map(([f,d]) => `<li><span style="font-family:'${f}'" class="text-base">${f === 'Blaka' || f === 'Lalezar' || f === 'Rakkas' || f === 'Marhey' || f === 'Aref Ruqaa' || f === 'Amiri' || f === 'Reem Kufi' ? 'خطوة' : 'نص'}</span> <span dir="ltr" class="font-bold">${f}</span>: <span class="text-zinc-600">${d}</span></li>`).join('')}
+      </ul></div>
+      <p class="text-sm leading-relaxed"><b>وش يميزها:</b> ${x.why}</p>
+    </div>
+  </article>`).join('');
+
+/* ---------- hero layouts (shown in variant أ) ---------- */
+const heroA = `<div class="dd v-a p-5 sm:p-7" style="min-height:440px">
+  ${nav('a')}
+  <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+    <div>${headline('a')}<p class="sub mt-4">${subText}</p>${cta('a')}</div>
+    <div class="relative h-[330px]">
+      <div class="absolute tilt" style="--r:6;top:0;right:4%;width:62%;background:var(--news);padding:12px;filter:drop-shadow(3px 4px 0 rgba(0,0,0,.2))">
+        <div style="font-family:var(--f2);font-size:22px;border-bottom:3px double var(--ink)">أخبار الروتين</div>
+        <div style="font-family:var(--f1);font-size:13px;line-height:1.6;margin-top:6px">شاب يشرب ٨ أكواب ماء لمدة ١٢ يوم متتالي… والعلماء في حيرة!</div>
+        <div class="mt-2 space-y-1">${'<div style="height:5px;background:rgba(0,0,0,.25)"></div>'.repeat(5)}</div>
+      </div>
+      <div class="absolute" style="bottom:0;left:4%">${screen(-7, 210)}</div>
+      <div class="stamp tilt absolute" style="--r:12;top:46%;right:0;z-index:5">مُعتمد</div>
+    </div>
+  </div>
+</div>`;
+
+const fanCard = (r, x, inner) => `<div class="clipwrap tilt absolute" style="--r:${r};left:50%;margin-left:${x}px;bottom:0;width:180px"><div class="clip torn" style="min-height:170px">${inner}</div></div>`;
+const heroB = `<div class="dd v-a p-5 sm:p-7" style="min-height:560px">
+  ${nav('a')}
+  <div class="relative z-10 flex flex-col items-center text-center">
+    <span class="postage tilt mb-3" style="--r:-3;font-size:14px">+١٠٬٠٠٠ شاب بدأوا رحلتهم</span>
+    ${headline('a', true)}
+    <p class="sub mt-4 mx-auto">${subText}</p>
+    <div class="flex justify-center">${cta('a')}</div>
+    <div class="relative w-full h-[220px] mt-6">
+      ${fanCard(-12, -250, `<div style="font-family:var(--f3);font-size:16px">عاداتي</div><div class="row"><span>ماء</span>${I.check}</div><div class="row"><span>رياضة</span>${I.check}</div><div class="row"><span>قراءة</span>${I.box}</div>`)}
+      ${fanCard(10, 70, `<div style="font-family:var(--f3);font-size:16px">المتصدرين</div><div class="row"><span>١. ريم</span><b>٢١٠٠</b></div><div class="row"><span>٢. أنت</span><b>١٢٤٠</b></div><div class="row"><span>٣. فهد</span><b>٩٨٠</b></div>`)}
+      <div class="clipwrap tilt absolute" style="--r:-2;left:50%;margin-left:-95px;bottom:14px;width:190px;z-index:3">
+        <span class="tape" style="top:-8px;right:35%;transform:rotate(5deg)"></span>
+        <div class="clip torn text-center" style="min-height:180px;background:var(--ink);color:var(--paper)">
+          <div style="font-family:var(--f2);font-size:20px">سلسلة الأيام</div>
+          <div style="font-family:var(--f3);font-size:56px;color:var(--yellow);line-height:1.2">١٢</div>
+          <div style="font-size:13px">يوم بدون ما توقف</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="stamp tilt absolute" style="--r:-14;top:20px;left:20px;z-index:5">رقم<br>٠٧</div>
+</div>`;
+
+const ticker = 'شرب الماء ✕ رياضة ✕ قراءة ✕ النوم بدري ✕ +٥٠ نقطة ✕ ١٢ يوم متتالي ✕ تحدّى أصحابك ✕ ';
+const heroC = `<div class="dd v-a p-5 sm:p-7" style="min-height:500px">
+  ${nav('a')}
+  <div class="strip tilt" style="--r:-7;top:120px;background:var(--ink);color:var(--paper);font-family:var(--f2);font-size:24px;padding:6px 0"><span class="track">${ticker.repeat(6)}</span></div>
+  <div class="strip tilt" style="--r:5;top:300px;background:var(--red);color:var(--paper);font-family:var(--f3);font-size:20px;padding:4px 0;opacity:.95"><span class="track" style="animation-direction:reverse">${ticker.repeat(6)}</span></div>
+  <div class="relative z-10 grid md:grid-cols-[1fr_auto] gap-8 items-center mt-10">
+    <div class="p-4" style="background:var(--paper);box-shadow:0 0 0 2px var(--ink)">${headline('a')}<p class="sub mt-3" style="padding-inline:0">${subText}</p>${cta('a')}</div>
+    <div class="mx-auto">${screen(6, 220)}</div>
+  </div>
+</div>`;
+
+const heroes = [
+  { n:'١', name:'Editorial Collage Hero', by:'felipemenezes098', url:'https://21st.dev/@felipemenezes098/components/hero-04', html: heroA,
+    orig:'عمودين: نص وأزرار في جهة، وكولاج من صورتين متداخلتين في الجهة الثانية.',
+    why:'الكولاج صار قصاصة «جريدة» ساخرة فوقها شاشة التطبيق مقصوصة ومثبتة بشريط لاصق، مع ختم. هذا أوضح ترتيب للقراءة، والعنوان والزر بارزين.' },
+  { n:'٢', name:'Centered Hero with Image Fan', by:'felipemenezes098', url:'https://21st.dev/@felipemenezes098/components/hero-10', html: heroB,
+    orig:'عنوان في الوسط، زرين، وإثبات اجتماعي، ومروحة من ثلاث صور متداخلة.',
+    why:'المروحة صارت ٣ قصاصات: العادات، وسلسلة الأيام في الوسط، والمتصدرين. والإثبات الاجتماعي صار طابع بريد. يعرض كل مميزات التطبيق من أول نظرة.' },
+  { n:'٣', name:'Tilted Grid Hero', by:'Ruixen', url:'https://21st.dev/@ruixen.ui/components/tilted-grid-hero', html: heroC,
+    orig:'شريط صور يدور بلا نهاية ومنحني بالأبعاد الثلاثية.',
+    why:'الشريط صار شريطين أخبار مايلين يتقاطعون مثل علامة ✕، وفيهم العادات والنقاط. فيه حركة دائمة وطاقة عالية، والعنوان على ورقة ثابتة عشان يظل مقروء.' },
+];
+
+document.getElementById('heroes').innerHTML = heroes.map(h => `
+  <article class="bg-white border-2 border-zinc-900 grid lg:grid-cols-[1fr_300px]" style="box-shadow:6px 6px 0 #C8201C">
+    ${h.html}
+    <div class="p-5 flex flex-col gap-3 border-t-2 lg:border-t-0 lg:border-r-2 border-zinc-900">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 bg-red-700 text-white grid place-items-center font-extrabold text-xl">${h.n}</span>
+        <h3 class="font-extrabold text-lg leading-tight" dir="ltr">${h.name}</h3>
+      </div>
+      <p class="text-xs text-zinc-600" dir="ltr">by ${h.by} · <a class="underline" href="${h.url}" target="_blank" rel="noopener">${h.url.replace('https://','')}</a></p>
+      <p class="text-sm leading-relaxed"><b>الأصل:</b> ${h.orig}</p>
+      <p class="text-sm leading-relaxed"><b>بنسخة الدادا:</b> ${h.why}</p>
+      <p class="text-xs text-zinc-600">الخطوط والألوان: نفس تنويعة (أ)، وتتغير حسب اختيارك.</p>
+    </div>
+  </article>`).join('');
+</script>
+</body>
+</html>
